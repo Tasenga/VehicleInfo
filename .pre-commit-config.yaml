@@ -1,0 +1,18 @@
+repos:
+-   repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+    - id: black
+      # don't convert all strings to double-quotes
+      args: [--skip-string-normalization, --line-length=78]
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    - id: trailing-whitespace
+      # bumpversion adds trailing whitespace - https://github.com/c4urself/bump2version/issues/58
+      exclude: '.bumpversion.cfg'
+    - id: flake8
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.782
+    hooks:
+    - id: mypy
