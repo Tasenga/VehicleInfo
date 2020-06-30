@@ -19,18 +19,18 @@ def update_ddl():
             LOCATION "{change_standart_path('dbs', 'schwacke')}";
 
 CREATE TABLE IF NOT EXISTS schwacke.make (
-            MAKMarket CHAR(2),
+            MAKMarket VARCHAR(2),
             MAKVehType SMALLINT,
-            MAKLangCode CHAR(4),
+            MAKLangCode VARCHAR(4),
             MAKNatCode INT,
             MAKRecStatus SMALLINT,
-            MAKRecDate CHAR(8),
-            MAKName CHAR(40),
-            MAKName2 CHAR(40),
-            MAKCompany CHAR(40),
-            MAKImporter CHAR(40),
-            MAKURLMake CHAR(60),
-            MAKURLImp CHAR(60),
+            MAKRecDate VARCHAR(8),
+            MAKName VARCHAR(40),
+            MAKName2 VARCHAR(40),
+            MAKCompany VARCHAR(40),
+            MAKImporter VARCHAR(40),
+            MAKURLMake VARCHAR(60),
+            MAKURLImp VARCHAR(60),
             MAKADRCompCd INT,
             MAKADRImpCd INT,
             MAKSort INT
@@ -41,23 +41,23 @@ FIELDS TERMINATED BY '\\t'
 STORED AS TEXTFILE;
 
 CREATE TABLE IF NOT EXISTS schwacke.model (
-            MODMarket CHAR(2),
+            MODMarket VARCHAR(2),
             MODVehType SMALLINT,
-            MODLangCode CHAR(4),
+            MODLangCode VARCHAR(4),
             MODNatCode INT,
             MODRecStatus SMALLINT,
-            MODRecDate CHAR(8),
+            MODRecDate VARCHAR(8),
             MODMakCD INT,
             MODMakIntCD SMALLINT,
-            MODName CHAR(40),
-            MODName2 CHAR(40),
-            MODNameGrp1 CHAR(50),
-            MODNameGrp2 CHAR(50),
-            MODModelSerCode CHAR(10),
-            MODBegin CHAR(4),
-            MODEnd CHAR(4),
-            MODImpBegin CHAR(6),
-            MODImpEnd CHAR(6),
+            MODName VARCHAR(40),
+            MODName2 VARCHAR(40),
+            MODNameGrp1 VARCHAR(50),
+            MODNameGrp2 VARCHAR(50),
+            MODModelSerCode VARCHAR(10),
+            MODBegin VARCHAR(4),
+            MODEnd VARCHAR(4),
+            MODImpBegin VARCHAR(6),
+            MODImpEnd VARCHAR(6),
             MODSuccessor INT,
             MODPrev INT,
             MODSort INT
@@ -68,46 +68,46 @@ FIELDS TERMINATED BY '\\t'
 STORED AS TEXTFILE;
 
 CREATE TABLE IF NOT EXISTS schwacke.type (
-            TYPMarket CHAR(2),
+            TYPMarket VARCHAR(2),
             TYPVehType SMALLINT,
-            TYPNatCode CHAR(13),
+            TYPNatCode VARCHAR(13),
             TYPRecStatus SMALLINT,
-            TYPRecDate CHAR(8),
-            TYPName CHAR(60),
-            TYPName2 CHAR(60),
-            TYPTXTSeg1Cd2 CHAR(8),
-            TYPTXTSeg2Cd2 CHAR(8),
-            TYPTXTSegIntCd2 CHAR(8),
-            TYPTXTSegFisCd2 CHAR(8),
+            TYPRecDate VARCHAR(8),
+            TYPName VARCHAR(60),
+            TYPName2 VARCHAR(60),
+            TYPTXTSeg1Cd2 VARCHAR(8),
+            TYPTXTSeg2Cd2 VARCHAR(8),
+            TYPTXTSegIntCd2 VARCHAR(8),
+            TYPTXTSegFisCd2 VARCHAR(8),
             TYPModCd INT,
             TYPMakCd INT,
             TYPModIntCd SMALLINT,
             TYPMakIntCd SMALLINT,
-            TYPImpBegin CHAR(6),
-            TYPImpEnd CHAR(6),
-            TYPTYPBasTypeCd CHAR(13),
+            TYPImpBegin VARCHAR(6),
+            TYPImpEnd VARCHAR(6),
+            TYPTYPBasTypeCd VARCHAR(13),
             TYPStatus SMALLINT,
             TYPSort INT,
             TYPKW DECIMAL(6, 2),
             TYPHP DECIMAL(6, 2),
             TYPTaxHP DECIMAL(6, 2),
-            TYPManCode CHAR(12),
-            TYPTXTFuelTypeCd2 CHAR(8),
-            TYPTXTBodyCo1Cd2 CHAR(8),
-            TYPTXTBodyCo2Cd2 CHAR(8),
-            TYPTXTBodyCoIntCd2 CHAR(8),
+            TYPManCode VARCHAR(12),
+            TYPTXTFuelTypeCd2 VARCHAR(8),
+            TYPTXTBodyCo1Cd2 VARCHAR(8),
+            TYPTXTBodyCo2Cd2 VARCHAR(8),
+            TYPTXTBodyCoIntCd2 VARCHAR(8),
             TYPDoor SMALLINT,
             TYPCylinder SMALLINT,
-            TYPTXTCylArrCd2 CHAR(8),
+            TYPTXTCylArrCd2 VARCHAR(8),
             TYPCapTech DECIMAL(7, 2),
             TYPTorque DECIMAL(6, 2),
-            TYPTXTChargeCd2 CHAR(8),
+            TYPTXTVARCHARgeCd2 VARCHAR(8),
             TYPValvpCyl SMALLINT,
-            TYPTXTExhTreatCd2 CHAR(8),
-            TYPTXTPollNormCd2 CHAR(8),
-            TYPTXTTransTypeCd2 CHAR(8),
-            TYPTXTTrnsTypCd2V2 CHAR(8),
-            TYPTXTDriveTypeCd2 CHAR(8),
+            TYPTXTExhTreatCd2 VARCHAR(8),
+            TYPTXTPollNormCd2 VARCHAR(8),
+            TYPTXTTransTypeCd2 VARCHAR(8),
+            TYPTXTTrnsTypCd2V2 VARCHAR(8),
+            TYPTXTDriveTypeCd2 VARCHAR(8),
             TYPNumGearF SMALLINT,
             TYPNumGearFV2 SMALLINT,
             TYPWheelB1 INT,
@@ -116,8 +116,8 @@ CREATE TABLE IF NOT EXISTS schwacke.type (
             TYPTotWgtV2 INT,
             TYPSeat SMALLINT,
             TYPSeatMax SMALLINT,
-            TYPSeat2 CHAR(10),
-            TYPSeatMax2 CHAR(10),
+            TYPSeat2 VARCHAR(10),
+            TYPSeatMax2 VARCHAR(10),
             TYPDoorMax SMALLINT,
             TYPRoofLoad SMALLINT,
             TYPLength INT,
@@ -140,16 +140,30 @@ CREATE TABLE IF NOT EXISTS schwacke.type (
             TYPMloCd SMALLINT,
             TYPMltCd SMALLINT,
             TYPTseCd SMALLINT,
-            TYPConsRating CHAR(1),
-            TYPConsRatingV2 CHAR(1),
+            TYPConsRating VARCHAR(1),
+            TYPConsRatingV2 VARCHAR(1),
             TYPConsIndex DECIMAL(6, 4),
             TYPConsIndexV2 DECIMAL(6, 4),
-            TYPUVID CHAR(25),
-            TYPSecFuelTypCd2 CHAR(8),
+            TYPUVID VARCHAR(25),
+            TYPSecFuelTypCd2 VARCHAR(8),
             TYPSecKW DECIMAL(6, 2),
             TYPSecTorque DECIMAL(6, 2),
-            TYPRoofMaterialCd2 CHAR(8),
-            TYPRegTypeCd2 CHAR(8)
+            TYPRoofMaterialCd2 VARCHAR(8),
+            TYPRegTypeCd2 VARCHAR(8)
+)
+PARTITIONED BY(data_date_part STRING, data_timestamp_part STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\\t'
+STORED AS TEXTFILE;
+
+CREATE TABLE IF NOT EXISTS schwacke.txttable (
+            TXTMarket VARCHAR(2),
+            TXTCode VARCHAR(8),
+            TXTLangCode VARCHAR(4),
+            TXTTextLong VARCHAR(50),
+            TXTTextShort VARCHAR(10),
+            TXTRecStatus SMALLINT,
+            TXTRecDate VARCHAR(8)
 )
 PARTITIONED BY(data_date_part STRING, data_timestamp_part STRING)
 ROW FORMAT DELIMITED
@@ -172,6 +186,13 @@ INTO TABLE schwacke.model
 
 LOAD DATA INPATH "{change_standart_path('data_source', 'TYPE.gkp')}"
 INTO TABLE schwacke.type
+    PARTITION(
+        data_date_part='{datetime.now().date()}',
+        data_timestamp_part='{int(datetime.now().timestamp())}'
+    );
+
+LOAD DATA INPATH "{change_standart_path('data_source', 'TXTTABEL.gkp')}"
+INTO TABLE schwacke.txttable
     PARTITION(
         data_date_part='{datetime.now().date()}',
         data_timestamp_part='{int(datetime.now().timestamp())}'
