@@ -1,14 +1,15 @@
-from datetime import datetime
-import json
-from pathlib import Path
+from configparser import ConfigParser
 
 from pyspark.sql import SparkSession
 
 from transfer.create_ddl import update_ddl, read_ddl
-from transfer.mapping import tmp_table, create_dict
+from transfer.mapping import tmp_table
 
 
 if __name__ == '__main__':
+    config = ConfigParser()
+    config.read('config.ini')
+
     update_ddl()
 
     spark = (
@@ -20,13 +21,4 @@ if __name__ == '__main__':
     for ddl in read_ddl().split('\n\n'):
         spark.sql(f'''{ddl}''')
 
-    with Path(
-        'results', f'output_{int(datetime.now().timestamp())}.json'
-    ).open('w') as output:
-        for row in tmp_table(spark).collect():
-            output.write(json.dumps(create_dict(row)))
-            output.write('\n')
-
-    # tmp_table(spark).toPandas().to_json(
-    #     'D:/json.json', orient='records', force_ascii=False, lines=True
-    # )
+    tmp_table(spark).coalesce(1).write.format('json').save('D:/json3.json')

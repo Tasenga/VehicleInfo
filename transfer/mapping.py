@@ -1,21 +1,18 @@
-from pyspark.sql.functions import col
-
-
 def tmp_table(spark):
     tmp_table = spark.sql(
         '''SELECT
-        MODNatCode,
-        MODName,
-        MODName2,
-        MAKNatCode,
-        MAKName,
-        TYPNatCode,
-        TYPName,
-        TYPDoor,
-        TYPSeat,
-        TYPTXTBodyCo1Cd2,
-        TYPTXTDriveTypeCd2,
-        TYPTXTTransTypeCd2
+        TYPNatCode AS schwackeCode,
+        STRUCT(MODNatCode AS schwackeCode,
+        MODName AS name,
+        MODName2 AS name2) AS model,
+        STRUCT(MAKNatCode AS schwackeCode,
+        MAKName AS name) AS make,
+        TYPName AS name,
+        TYPDoor AS doors,
+        TYPSeat AS seats,
+        TYPTXTBodyCo1Cd2 AS bodyType,
+        TYPTXTDriveTypeCd2 AS driveType,
+        TYPTXTTransTypeCd2 AS transmissionType
         FROM schwacke.type AS type
             LEFT JOIN
             schwacke.model AS model
@@ -26,14 +23,14 @@ def tmp_table(spark):
             schwacke.make AS make
             ON
             type.TYPVehType = make.MAKVehType AND
-            type.TYPMakCd = make.MAKNatCode'''
+            type.TYPMakCd = make.MAKNatCode;'''
     )
 
     type_table = spark.sql(
         '''SELECT
             TXTCode,
             TXTTextLong
-        FROM schwacke.txttable'''
+        FROM schwacke.txttable;'''
     )
 
     def type_replace(main_df, type_df, replaced_column):
@@ -41,35 +38,17 @@ def tmp_table(spark):
             main_df.join(
                 type_df,
                 main_df[replaced_column] == type_df['TXTCode'],
-                'inner',
+                'left',
             )
-            .withColumn(replaced_column, col("TXTTextLong"))
-            .drop("TXTTextLong", "TXTCode")
+            .drop(replaced_column, "TXTCode")
+            .withColumnRenamed('TXTTextLong', replaced_column)
         )
 
     for replaced_column in [
-        'TYPTXTBodyCo1Cd2',
-        'TYPTXTDriveTypeCd2',
-        'TYPTXTTransTypeCd2',
+        'bodyType',
+        'driveType',
+        'transmissionType',
     ]:
         tmp_table = type_replace(tmp_table, type_table, replaced_column)
 
     return tmp_table
-
-
-def create_dict(row):
-    return {
-        'schwackeCode': row.TYPNatCode,
-        'model': {
-            'schwackeCode': row.MODNatCode,
-            'name': row.MODName,
-            'name2': row.MODName2,
-        },
-        'make': {'schwackeCode': row.MAKNatCode, 'name': row.MAKName},
-        'name': row.TYPName,
-        'bodyType': row.TYPTXTBodyCo1Cd2,
-        'driveType': row.TYPTXTDriveTypeCd2,
-        'transmissionType': row.TYPTXTTransTypeCd2,
-        'doors': row.TYPDoor,
-        'seats': row.TYPSeat,
-    }
