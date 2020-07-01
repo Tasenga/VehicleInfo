@@ -196,8 +196,7 @@ INTO TABLE schwacke.txttable
     PARTITION(
         data_date_part='{datetime.now().date()}',
         data_timestamp_part='{int(datetime.now().timestamp())}'
-    );
-        '''
+    );'''
         )
 
 

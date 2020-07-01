@@ -52,7 +52,24 @@ def tmp_table(spark):
         'TYPTXTDriveTypeCd2',
         'TYPTXTTransTypeCd2',
     ]:
-        result = type_replace(tmp_table, type_table, replaced_column)
-        tmp_table = result
+        tmp_table = type_replace(tmp_table, type_table, replaced_column)
 
     return tmp_table
+
+
+def create_dict(row):
+    return {
+        'schwackeCode': row.TYPNatCode,
+        'model': {
+            'schwackeCode': row.MODNatCode,
+            'name': row.MODName,
+            'name2': row.MODName2,
+        },
+        'make': {'schwackeCode': row.MAKNatCode, 'name': row.MAKName},
+        'name': row.TYPName,
+        'bodyType': row.TYPTXTBodyCo1Cd2,
+        'driveType': row.TYPTXTDriveTypeCd2,
+        'transmissionType': row.TYPTXTTransTypeCd2,
+        'doors': row.TYPDoor,
+        'seats': row.TYPSeat,
+    }
