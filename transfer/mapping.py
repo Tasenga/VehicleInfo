@@ -17,12 +17,12 @@ def tmp_table(spark):
         TYPTXTDriveTypeCd2,
         TYPTXTTransTypeCd2
         FROM schwacke.type AS type
-            INNER JOIN
+            LEFT JOIN
             schwacke.model AS model
             ON
             type.TYPVehType = model.MODVehType AND
             type.TYPModCd = model.MODNatCode
-            INNER JOIN
+            LEFT JOIN
             schwacke.make AS make
             ON
             type.TYPVehType = make.MAKVehType AND
