@@ -134,7 +134,8 @@ data_source/
 documentations/
 metastore_db/
 dbs/
-results/
+test/
+main/
 
 #configuration
-config.ini
+*.ini
