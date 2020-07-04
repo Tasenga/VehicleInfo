@@ -1,7 +1,8 @@
 from pathlib import Path
-from datetime import datetime
 from dataclasses import dataclass
 import logging
+
+from pyspark.sql import SparkSession
 
 from .configuration import Configuration
 
@@ -40,8 +41,9 @@ class DDL:
         change_list = {
             '{ROOT_DIRECTORY}': str(Path.cwd()).replace('\\', '/'),
             '{MODE_FOLDER}': self.configuration.mode_folder.value,
-            '{CURRENT_DATE_%Y-%m-%d}': str(datetime.now().date()),
-            '{CURRENT_TIMESTAMP}': str(int(datetime.now().timestamp())),
+            '{CURRENT_DATE_%Y-%m-%d}': self.configuration.current_date,
+            '{CURRENT_TIMESTAMP}': self.configuration.current_timestamp,
+            '{DB_NAME}': self.configuration.db_name,
         }
 
         for old, new in change_list.items():
@@ -57,12 +59,12 @@ class DDL:
                         according to the template was created successful'''
         )
 
-    def read_ddl(self) -> str:
+    def run_ddl(self, spark: SparkSession) -> None:
         '''
-        the function reads a text file with a list of ddl operations
+        the function runs ddl operations
+        from the text file with a list of ddl operations
         according to the template with the current time stamp
         and the current project directory according to the configuration
-        to single string object
         '''
         with Path(self.mode_directory, 'schwacke_hive_tables_ddl.txt').open(
             'r'
@@ -70,4 +72,6 @@ class DDL:
             _LOGGER.debug(
                 '''text file with a list of ddl operations is available'''
             )
-            return ddl.read()
+            for operation in ddl.read().split('\n\n'):
+                spark.sql(f'''{operation}''')
+                # _LOGGER.debug(f"operation was completed: {ddl}")

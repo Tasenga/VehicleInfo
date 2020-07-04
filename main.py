@@ -2,13 +2,13 @@ import logging
 from datetime import datetime
 from pathlib import Path
 import argparse
+from shutil import copy
 
 from pyspark.sql import SparkSession
 
-# from pymongo import MongoClient
-
 from script.ddl_processing import DDL
-from script.mapping import create_tmp_table
+from script.df_worker import DF_WORKER
+from script.db_worker import DB_WORKER
 from script.configuration import Configuration
 
 
@@ -52,22 +52,51 @@ def set_custom_logging(
         log_folder,
         f'log_{datetime.strftime(datetime.now(), "%Y-%m-%d_%H-%M-%S")}.log',
     )
+
     logging.root.handlers = [
         logging.FileHandler(log_file, mode='w'),
         logging.StreamHandler(),
     ]
+
     logging.basicConfig(
         format='%(asctime)s - %(funcName)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d  %H:%M:%S',
     )
 
 
-def run_main() -> None:
-    pass
+def run_main(spark: SparkSession, configuration: Configuration) -> None:
 
+    ddl = DDL(configuration=configuration)
 
-def run_test() -> None:
-    pass
+    ddl.update_ddl()
+    ddl.run_ddl(spark)
+
+    tmp_table = DF_WORKER.create_tmp_table(spark, configuration)
+
+    tmp_table.write_to_file()
+    _LOGGER.debug('''json file with resulting data was created''')
+
+    mongo_collection = DB_WORKER.connect('localhost', 27017, tmp_table)
+    mongo_collection.write_to_mongodb()
+    _LOGGER.debug('''data was added to mongodb''')
+
+    if configuration.mode.value == 'test':
+        mode_folder = Path(
+            Path.cwd(), tmp_table.configuration.mode_folder.value
+        )
+        for path in Path(mode_folder, 'data_source', 'data').iterdir():
+            if path.is_file():
+                copy(str(path), str(Path(mode_folder, 'data_source')))
+
+        result_from_file = tmp_table.read_from_file()
+
+        print(result_from_file)
+
+        result_from_db = mongo_collection.read_from_mongodb()
+
+        print(result_from_db)
+
+        mongo_collection.drop_collection_mongodb()
 
 
 if __name__ == '__main__':
@@ -84,34 +113,4 @@ if __name__ == '__main__':
 
     _LOGGER.debug(f"current configuration {configuration}")
 
-    ddl = DDL(configuration=configuration)
-    ddl.update_ddl()
-
-    for ddl in ddl.read_ddl().split('\n\n'):
-        spark.sql(f'''{ddl}''')
-        _LOGGER.debug(f"operation was completed: {ddl}")
-
-    # def save_files
-    tmp_table_folder = Path(
-        Path.cwd(), configuration.mode_folder.value, 'result'
-    )
-    tmp_table_folder.mkdir(parents=True, exist_ok=True)
-    create_tmp_table(spark).coalesce(1).write.json(
-        str(
-            Path(
-                tmp_table_folder,
-                f'{datetime.strftime(datetime.now(), "%Y-%m-%d_%H-%M-%S")}',
-            )
-        )
-    )
-    _LOGGER.debug('''json file with resulting data was created''')
-
-    # class database with methods connect write read
-    # client = MongoClient("localhost", 27017)
-    # db = client['vehicles']
-    # collection_currency = db['variants']
-
-    # collection_currency.insert_many([json.loads(row)
-    # for row in tmp_table(spark).toJSON().collect()])
-
-    # client.close()
+    run_main(spark, configuration)
