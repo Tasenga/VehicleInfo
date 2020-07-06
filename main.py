@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 from pathlib import Path
 import argparse
-from shutil import copy
 
 from pyspark.sql import SparkSession
 
@@ -10,6 +9,7 @@ from script.ddl_processing import DDL
 from script.df_worker import DF_WORKER
 from script.db_worker import DB_WORKER
 from script.configuration import Configuration
+from script.global_test import global_test
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -81,22 +81,7 @@ def run_main(spark: SparkSession, configuration: Configuration) -> None:
     _LOGGER.debug('''data was added to mongodb''')
 
     if configuration.mode.value == 'test':
-        mode_folder = Path(
-            Path.cwd(), tmp_table.configuration.mode_folder.value
-        )
-        for path in Path(mode_folder, 'data_source', 'data').iterdir():
-            if path.is_file():
-                copy(str(path), str(Path(mode_folder, 'data_source')))
-
-        result_from_file = tmp_table.read_from_file()
-
-        print(result_from_file)
-
-        result_from_db = mongo_collection.read_from_mongodb()
-
-        print(result_from_db)
-
-        mongo_collection.drop_collection_mongodb()
+        global_test(tmp_table, mongo_collection)
 
 
 if __name__ == '__main__':

@@ -33,11 +33,6 @@ class DF_WORKER:
          aggregates it and saves like pyspark dataframe object.
          '''
 
-        _LOGGER.debug(
-            '''start selecting preliminary temporary table.
-                The number of entries in main_table (schwacke.type)'''
-        )
-
         tmp_table = spark.sql(
             f'''SELECT
             TYPNatCode AS schwackeCode,
@@ -75,9 +70,6 @@ class DF_WORKER:
                 type.TYPMakCd = make.MAKNatCode;'''
         )
 
-        _LOGGER.debug('end selecting preliminary temporary table.')
-
-        _LOGGER.debug('''start selecting data from table of types.''')
         type_table = spark.sql(
             f'''SELECT
                 TXTCode,
@@ -86,7 +78,6 @@ class DF_WORKER:
             WHERE data_date_part='{configuration.current_date}' AND
             data_timestamp_part='{configuration.current_timestamp}';'''
         )
-        _LOGGER.debug('end selecting preliminary temporary table.')
 
         def type_replace(
             main_df: dataframe.DataFrame,
@@ -106,20 +97,12 @@ class DF_WORKER:
                 .withColumnRenamed('TXTTextLong', replaced_column)
             )
 
-        _LOGGER.debug(
-            '''start adding vehicle type information
-            from the type table to the preliminary temporary table.'''
-        )
         for replaced_column in [
             'bodyType',
             'driveType',
             'transmissionType',
         ]:
             tmp_table = type_replace(tmp_table, type_table, replaced_column)
-        _LOGGER.debug(
-            '''end adding vehicle type information from
-            the type table to the preliminary temporary table.'''
-        )
 
         tmp_table = tmp_table.drop_duplicates()
         return cls(
