@@ -9,7 +9,6 @@ from .configuration import Configuration
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
-cwd = Path.cwd()
 
 
 @dataclass
@@ -24,7 +23,9 @@ class DDL:
 
     @property
     def mode_directory(self) -> Path:
-        return Path(cwd, self.configuration.mode_folder.value, 'data_source')
+        return Path(
+            Path.cwd(), self.configuration.mode_folder.value, 'data_source'
+        )
 
     def update_ddl(self) -> None:
         '''

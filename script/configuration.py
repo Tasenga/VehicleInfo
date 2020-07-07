@@ -24,6 +24,8 @@ class Configuration(BaseModel):
     mode: Mode = Mode.main
     mode_folder: Mode = Mode.main
     db_name: str = 'schwacke'
+    host: str
+    port: int
     current_date: str = str(datetime.now().date())
     current_timestamp: str = str(int(datetime.now().timestamp()))
 
@@ -36,4 +38,6 @@ class Configuration(BaseModel):
             mode=config['PARAMETRS']['mode'],
             mode_folder=config['PARAMETRS']['mode'],
             db_name=config['PARAMETRS']['db_name'],
+            host=config['PARAMETRS']['host'],
+            port=config['PARAMETRS']['port'],
         )

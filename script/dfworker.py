@@ -16,7 +16,7 @@ _LOGGER.setLevel(logging.DEBUG)
 
 
 @dataclass
-class DF_WORKER:
+class DfWorker:
     '''class to create dataframe from source data,
     write it into files and database'''
 
@@ -27,7 +27,7 @@ class DF_WORKER:
     @classmethod
     def create_tmp_table(
         cls: Type, spark: SparkSession, configuration
-    ) -> DF_WORKER:
+    ) -> DfWorker:
         '''
         The function gets required information from several hive-tables,
          aggregates it and saves like pyspark dataframe object.

@@ -1,19 +1,19 @@
 from __future__ import annotations
 from pymongo import MongoClient
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 from json import loads
 
-from .df_worker import DF_WORKER
+from .dfworker import DfWorker
 
 
 @dataclass
-class DB_WORKER:
+class DbWorker:
     collection: MongoClient
-    table: DF_WORKER
+    table: DfWorker
 
     @classmethod
-    def connect(cls, host: str, port: int, table: DF_WORKER) -> DB_WORKER:
+    def connect(cls, host: str, port: int, table: DfWorker) -> DbWorker:
         client = MongoClient(host, port)
         db = client[table.configuration.db_name]
         collection = db['variants']
@@ -27,7 +27,7 @@ class DB_WORKER:
             [loads(row) for row in self.table.table.toJSON().collect()]
         )
 
-    def read_from_mongodb(self) -> List:
+    def read_from_mongodb(self) -> List[Dict]:
         '''The function reads mongodb collection with
         results and returns list of dictionaries'''
         return [row for row in self.collection.find()]
