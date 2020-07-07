@@ -108,9 +108,7 @@ class DfWorker:
         return cls(
             table=tmp_table,
             configuration=configuration,
-            tmp_table_folder=Path(
-                Path.cwd(), configuration.mode_folder.value, 'result'
-            ),
+            tmp_table_folder=Path(Path.cwd(), 'result'),
         )
 
     def write_to_file(self) -> None:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
 from typing import Type
-from enum import Enum
 import logging
 from configparser import ConfigParser
 from datetime import datetime
@@ -13,17 +12,10 @@ _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
 
 
-class Mode(Enum):
-    test = "test"
-    main = "main"
-
-
 class Configuration(BaseModel):
-    ''''''
 
-    mode: Mode = Mode.main
-    mode_folder: Mode = Mode.main
-    db_name: str = 'schwacke'
+    source_folder: str
+    db_name: str
     host: str
     port: int
     current_date: str = str(datetime.now().date())
@@ -31,13 +23,11 @@ class Configuration(BaseModel):
 
     @classmethod
     def from_file(cls: Type, file_path: Path) -> Configuration:
-        '''# ...'''
         config = ConfigParser()
         config.read(file_path)
         return cls(
-            mode=config['PARAMETRS']['mode'],
-            mode_folder=config['PARAMETRS']['mode'],
-            db_name=config['PARAMETRS']['db_name'],
-            host=config['PARAMETRS']['host'],
-            port=config['PARAMETRS']['port'],
+            source_folder=config['PARAMETERS']['source_folder'],
+            db_name=config['PARAMETERS']['db_name'],
+            host=config['PARAMETERS']['host'],
+            port=config['PARAMETERS']['port'],
         )

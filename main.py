@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 import argparse
+from typing import Tuple
 import sys
 
 from pyspark.sql import SparkSession
@@ -9,7 +10,6 @@ from script.ddl_processing import DDL
 from script.dfworker import DfWorker
 from script.dbworker import DbWorker
 from script.configuration import Configuration
-from script.global_test import global_test
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,7 +41,9 @@ def catch_args() -> argparse.ArgumentParser:
     return parser
 
 
-def run_main(spark: SparkSession, configuration: Configuration) -> None:
+def run_main(
+    spark: SparkSession, configuration: Configuration
+) -> Tuple[DfWorker, DbWorker]:
 
     ddl = DDL(configuration=configuration)
 
@@ -53,12 +55,12 @@ def run_main(spark: SparkSession, configuration: Configuration) -> None:
     tmp_table.write_to_file()
     _LOGGER.debug('''json file with resulting data was created''')
 
-    mongo_collection = DbWorker.connect('localhost', 27017, tmp_table)
+    mongo_collection = DbWorker.connect(
+        configuration.host, configuration.port, tmp_table
+    )
     mongo_collection.write_to_mongodb()
     _LOGGER.debug('''data was added to mongodb''')
-
-    if configuration.mode.value == 'test':
-        global_test(tmp_table, mongo_collection)
+    return tmp_table, mongo_collection
 
 
 if __name__ == '__main__':

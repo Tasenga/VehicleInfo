@@ -23,9 +23,7 @@ class DDL:
 
     @property
     def mode_directory(self) -> Path:
-        return Path(
-            Path.cwd(), self.configuration.mode_folder.value, 'data_source'
-        )
+        return Path(Path.cwd(), self.configuration.source_folder)
 
     def update_ddl(self) -> None:
         '''
@@ -41,7 +39,7 @@ class DDL:
 
         change_list = {
             '{ROOT_DIRECTORY}': str(Path.cwd()).replace('\\', '/'),
-            '{MODE_FOLDER}': self.configuration.mode_folder.value,
+            '{SOURCE_FOLDER}': self.configuration.source_folder,
             '{CURRENT_DATE_%Y-%m-%d}': self.configuration.current_date,
             '{CURRENT_TIMESTAMP}': self.configuration.current_timestamp,
             '{DB_NAME}': self.configuration.db_name,
@@ -75,4 +73,3 @@ class DDL:
             )
             for operation in ddl.read().split('\n\n'):
                 spark.sql(f'''{operation}''')
-                # _LOGGER.debug(f"operation was completed: {ddl}")
