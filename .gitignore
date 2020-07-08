@@ -131,7 +131,6 @@ dmypy.json
 #data
 *.csv
 data_source/
-test_data_source/
 documentations/
 metastore_db/
 dbs/
