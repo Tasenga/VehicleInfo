@@ -5,8 +5,8 @@ from json import loads
 
 from pyspark.sql import SparkSession
 
-from ...main import run_main
-from ..configuration import Configuration
+from main import run_main
+from vis.configuration import Configuration
 
 
 def test_run_main(spark_session: SparkSession) -> None:

@@ -10,3 +10,4 @@ pydantic==1.5.1
 virtualenv==20.0.25
 pytest==5.4.3
 pytest-spark==0.6.0
+pymongo==3.10.1
