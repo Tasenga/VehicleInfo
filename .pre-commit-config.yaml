@@ -16,3 +16,4 @@ repos:
     rev: v0.782
     hooks:
     - id: mypy
+      args: [--disallow-untyped-defs, --ignore-missing-imports, --no-strict-optional]

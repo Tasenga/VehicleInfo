@@ -25,9 +25,4 @@ class Configuration(BaseModel):
     def from_file(cls: Type, file_path: Path) -> Configuration:
         config = ConfigParser()
         config.read(file_path)
-        return cls(
-            source_folder=config['PARAMETERS']['source_folder'],
-            db_name=config['PARAMETERS']['db_name'],
-            host=config['PARAMETERS']['host'],
-            port=config['PARAMETERS']['port'],
-        )
+        return cls(**config['PARAMETERS'])

@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from json import loads
 import re
 
-from .configuration import Configuration
-
 from pyspark.sql import SparkSession, dataframe
+
+from .configuration import Configuration
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ _LOGGER.setLevel(logging.DEBUG)
 
 
 @dataclass
-class DfWorker:
+class DataFrameWorker:
     '''class to create dataframe from source data,
     write it into files and database'''
 
@@ -26,8 +26,8 @@ class DfWorker:
 
     @classmethod
     def create_tmp_table(
-        cls: Type, spark: SparkSession, configuration
-    ) -> DfWorker:
+        cls: Type, spark: SparkSession, configuration: Configuration
+    ) -> DataFrameWorker:
         '''
         The function gets required information from several hive-tables,
          aggregates it and saves like pyspark dataframe object.

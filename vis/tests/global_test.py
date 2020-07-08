@@ -3,11 +3,13 @@ from shutil import copy, rmtree
 from datetime import datetime
 from json import loads
 
+from pyspark.sql import SparkSession
+
 from ...main import run_main
 from ..configuration import Configuration
 
 
-def test_run_main(spark_session):
+def test_run_main(spark_session: SparkSession) -> None:
 
     configuration = Configuration(
         source_folder='test_data_source',
@@ -25,23 +27,27 @@ def test_run_main(spark_session):
 
     tmp_table, mongo_collection = run_main(spark_session, configuration)
 
-    result_from_file = tmp_table.read_from_file()
-    rmtree(
-        Path(
-            tmp_table.tmp_table_folder,
-            f'{tmp_table.configuration.current_date}'
-            f'_{tmp_table.configuration.current_timestamp}',
-        ),
-        ignore_errors=True,
-    )
+    try:
+        result_from_file = tmp_table.read_from_file()
+        result_from_db = mongo_collection.read_from_mongodb()
+        for dict in result_from_db:
+            dict.pop('_id')
+        with Path(mode_folder, 'control_output.json').open(
+            'r'
+        ) as file_result:
+            control_result = [loads(row) for row in file_result]
 
-    result_from_db = mongo_collection.read_from_mongodb()
-    for dict in result_from_db:
-        dict.pop('_id')
-    mongo_collection.drop_collection_mongodb()
-
-    with Path(mode_folder, 'control_output.json').open('r') as file_result:
-        control_result = [loads(row) for row in file_result]
+    finally:
+        rmtree(
+            Path(
+                tmp_table.tmp_table_folder,
+                f'{tmp_table.configuration.current_date}'
+                f'_{tmp_table.configuration.current_timestamp}',
+            ),
+            ignore_errors=True,
+        )
+        mongo_collection.drop_collection_mongodb()
 
     assert result_from_db == control_result
     assert result_from_file == control_result
+    spark_session.stop()
