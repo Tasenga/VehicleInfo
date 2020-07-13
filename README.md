@@ -10,23 +10,25 @@ This README documents steps are necessary to get this application up and running
 ### How do I get set up? ###
 
 * Prerequisites:
+    For Windows:
     1. install JAVA version 8 or higher;
     2. download Spark archive from https://spark.apache.org/downloads.html (Spark release 3.0.0 or higher pre-built for Apache Hadoop 2.7 or higher) and extract it;
     3. create SPARK_HOME and HADOOP_HOME to a directory which appeared on previous step;
-    4. for Windows: download relevant winutils.exe binary from https://github.com/steveloughran/winutils repository
-    5. for Windows: save winutils.exe binary to %HADOOP_HOME%\bin
+    4. download relevant winutils.exe binary from https://github.com/steveloughran/winutils repository
+    5. save winutils.exe binary to %HADOOP_HOME%\bin
     6. create c:\tmp\hive directory
-    7. for Windows: execute winutils.exe chmod -R 777 \tmp\hive
+    7. execute winutils.exe chmod -R 777 \tmp\hive
 
 * Summary of set up:
     1. clone this repository into the local machine;
     2. create a virtual environment and activate it;
     3. make sure that the virtual environment uses python 3.8 or higher;
     4. install python packages from requirements.txt (pip install -r requirements.txt);
-    5. create a data source folder in root project directory and storage customer data into source folder;
-    6. make sure that the MongoDB server has been run;
-    7. prepare configuration file with .ini type (see section "Configuration") and save it in root project directory;
-    8. run script from root project directory with using
+    5. run 'pre-commit install' to set up the git hook scripts;
+    6. storage customer data into 'data_source' folder in root project directory;
+    7. make sure that the MongoDB server has been run;
+    8. prepare configuration file with .ini type (see section "Configuration") and save it in root project directory;
+    9. run script from root project directory with using
 
            for Windows: 'python main.py -i name_your_configuration_file.ini'
            for Linux: 'python3 main.py -i name_your_configuration_file.ini'

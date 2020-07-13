@@ -50,4 +50,3 @@ def test_run_main(spark_session: SparkSession) -> None:
 
     assert result_from_db == control_result
     assert result_from_file == control_result
-    spark_session.stop()
