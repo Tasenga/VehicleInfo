@@ -9,9 +9,10 @@ from main import run_main
 from vis.configuration import Configuration
 
 
-def test_run_main(spark_session: SparkSession) -> None:
+def test_run_main_short(spark_session: SparkSession) -> None:
 
     configuration = Configuration(
+        mode='short',
         source_folder='test_data_source',
         db_name='schwacke_test',
         host='localhost',
