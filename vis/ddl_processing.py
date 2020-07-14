@@ -14,8 +14,7 @@ _LOGGER.setLevel(logging.DEBUG)
 @dataclass
 class DDL:
     '''
-    The object of the DDL class contains customer parameters
-    to create, update and read customizing DDL operations
+    The object of the DDL class contains customer parameters to create, update and read customizing DDL operations
     to extract data from the data source to hive-tables.
     '''
 
@@ -25,52 +24,44 @@ class DDL:
     def mode_directory(self) -> Path:
         return Path(Path.cwd(), self.configuration.source_folder)
 
-    def update_ddl(self) -> None:
+    @property
+    def file_ddl(self) -> Path:
+        return Path(self.mode_directory, f'{self.configuration.mode.value}_schwacke_hive_tables_ddl.txt')
+
+    def update_ddl(self, cwd: Path = Path.cwd()) -> None:
         '''
         The function writes a text file with a list of ddl operations
-        according to the template with the current time stamp
-        and the current project directory according to the configuration.
+        according to the template with the current timestamp and the current project directory
+        according to the configuration.
         '''
 
-        with Path(self.mode_directory, 'template_ddl.txt').open(
-            'r'
-        ) as example:
+        with Path(self.mode_directory, f'{self.configuration.mode.value}_template_ddl.txt').open('r') as example:
             template = example.read()
 
         change_list = {
-            '{ROOT_DIRECTORY}': str(Path.cwd()).replace('\\', '/'),
+            '{ROOT_DIRECTORY}': str(cwd).replace('\\', '/'),
             '{SOURCE_FOLDER}': self.configuration.source_folder,
             '{CURRENT_DATE_%Y-%m-%d}': self.configuration.current_date,
             '{CURRENT_TIMESTAMP}': self.configuration.current_timestamp,
-            '{DB_NAME}': f'{self.configuration.db_name}'
-            f'_{self.configuration.mode.value}',
+            '{DB_NAME}': f'{self.configuration.db_name}_{self.configuration.mode.value}',
         }
 
         for old, new in change_list.items():
             template = template.replace(old, new)
 
-        with Path(self.mode_directory, 'schwacke_hive_tables_ddl.txt').open(
-            'w'
-        ) as ddl_file:
+        with self.file_ddl.open('w') as ddl_file:
             ddl_file.write(template)
 
-        _LOGGER.debug(
-            '''text file with a list of ddl operations
-                        according to the template was created successful'''
-        )
+        _LOGGER.debug('''text file with a list of ddl operations according to the template was created successful''')
 
     def run_ddl(self, spark: SparkSession) -> None:
         '''
-        the function runs ddl operations
-        from the text file with a list of ddl operations
+        the function runs ddl operations from the text file with a list of ddl operations
         according to the template with the current time stamp
         and the current project directory according to the configuration
         '''
-        with Path(self.mode_directory, 'schwacke_hive_tables_ddl.txt').open(
-            'r'
-        ) as ddl:
-            _LOGGER.debug(
-                '''text file with a list of ddl operations is available'''
-            )
+
+        with self.file_ddl.open('r') as ddl:
+            _LOGGER.debug('''text file with a list of ddl operations is available''')
             for operation in ddl.read().split('\n\n'):
                 spark.sql(f'''{operation}''')
