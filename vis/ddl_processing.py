@@ -42,7 +42,8 @@ class DDL:
             '{SOURCE_FOLDER}': self.configuration.source_folder,
             '{CURRENT_DATE_%Y-%m-%d}': self.configuration.current_date,
             '{CURRENT_TIMESTAMP}': self.configuration.current_timestamp,
-            '{DB_NAME}': self.configuration.db_name,
+            '{DB_NAME}': f'{self.configuration.db_name}'
+            f'_{self.configuration.mode.value}',
         }
 
         for old, new in change_list.items():
