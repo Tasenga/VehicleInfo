@@ -1,0 +1,17 @@
+SELECT
+	ADDVehType as VehType,
+	ADDNatCode as NatCode,
+	ADDID as id,
+	ADDEQCode as code,
+	ADDVal as beginDate,
+	ADDValUntil as endDate,
+	ADDPrice1 as priceGross,
+	ADDPrice2 as priceNet,
+	ADDFlag as isOptional,
+	ADDFlagPack as flagPack,
+	ADDTargetGrp as targetGroup,
+	ADDTaxRt as taxRate,
+	ADDCurrency as currency
+FROM {DB_NAME}.addition
+WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+	data_timestamp_part='{CURRENT_TIMESTAMP}';

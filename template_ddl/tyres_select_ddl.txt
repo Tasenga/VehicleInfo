@@ -1,0 +1,10 @@
+SELECT
+	TYRVehType as VehType,
+	TYRID as JWHTYRTyreFCd,
+	TYRID as JWHTYRTyreRCd,
+	TYRWidth as width,
+	TYRCrossSec as aspectRatio,
+	TYRDesign as construction
+FROM {DB_NAME}.tyres
+WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+	data_timestamp_part='{CURRENT_TIMESTAMP}';

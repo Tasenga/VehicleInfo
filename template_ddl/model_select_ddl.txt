@@ -1,0 +1,14 @@
+SELECT
+	MODVehType as VehType,
+	MODNatCode as TYPModCd,
+	MODMakCD as schwackeCode,
+	MODName as name,
+	MODName2 as name2,
+	MODModelSerCode as serialCode,
+	MODBegin as yearBegin,
+	MODEnd as yearEnd,
+	MODImpBegin as productionBegin,
+	MODImpEnd as productionEnd
+FROM {DB_NAME}.model
+WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+	data_timestamp_part='{CURRENT_TIMESTAMP}';

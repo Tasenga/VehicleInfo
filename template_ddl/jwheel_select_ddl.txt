@@ -1,0 +1,11 @@
+SELECT
+	JWHVehType as VehType,
+	JWHNatCode as NatCode,
+        JWHTYRTyreFCd,
+        JWHTYRTyreRCd,
+	JWHRIMRimFCd,
+        JWHRIMRimRCd
+FROM {DB_NAME}.jwheel
+WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+	data_timestamp_part='{CURRENT_TIMESTAMP}' AND
+	JWHIsStd = 1;

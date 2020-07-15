@@ -1,0 +1,12 @@
+SELECT
+	PRHVehType as VehType,
+	PRHNatCode as NatCode,
+	PRHCurrency  as currency,
+	PRHNP1 as gross,
+	PRHNP2 as net,
+	PRHTaxRt as taxRate,
+	PRHVal as beginDate,
+	PRHValUntil as endDate
+FROM {DB_NAME}.pricehistory
+WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+	data_timestamp_part='{CURRENT_TIMESTAMP}';

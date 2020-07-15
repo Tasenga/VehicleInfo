@@ -1,0 +1,34 @@
+SELECT
+    TYPNatCode AS schwackeCode,
+    STRUCT(MODNatCode AS schwackeCode,
+    MODName AS name,
+    MODName2 AS name2) AS model,
+    STRUCT(MAKNatCode AS schwackeCode,
+    MAKName AS name) AS make,
+    TYPName AS name,
+    TYPDoor AS doors,
+    TYPSeat AS seats,
+    TYPTXTBodyCo1Cd2 AS bodyType,
+    TYPTXTDriveTypeCd2 AS driveType,
+    TYPTXTTransTypeCd2 AS transmissionType
+FROM
+	(SELECT * FROM {DB_NAME}.type
+	WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+    		data_timestamp_part='{CURRENT_TIMESTAMP}')
+	AS TYPE
+LEFT JOIN
+	(SELECT * FROM {DB_NAME}.model
+	WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+    		data_timestamp_part='{CURRENT_TIMESTAMP}')
+	AS model
+ON
+	type.TYPVehType = model.MODVehType AND
+	type.TYPModCd = model.MODNatCode
+LEFT JOIN
+	(SELECT * FROM {DB_NAME}.make
+	WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+    		data_timestamp_part='{CURRENT_TIMESTAMP}')
+	AS make
+ON
+	type.TYPVehType = make.MAKVehType AND
+	type.TYPMakCd = make.MAKNatCode;

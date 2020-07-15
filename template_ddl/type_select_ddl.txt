@@ -1,0 +1,25 @@
+SELECT
+    TYPVehType as VehType,
+    TYPNatCode as NatCode,
+	TYPModCd,
+    TYPName as name,
+	TYPName2 as name2,
+	TYPTXTFuelTypeCd2 as fuelType,
+	TYPTXTDriveTypeCd2 as driveType,
+    TYPTXTTransTypeCd2 as transmissionType,
+    TYPTXTBodyCo1Cd2 as bodyType,
+    TYPDoor as doors,
+    TYPSeat as seats,
+    TYPImpBegin as productionBegin,
+	TYPImpEnd as productionEnd,
+	TYPKW as kw,
+	TYPHP as ps,
+	TYPCapTech as displacement,
+	TYPCylinder as cylinders,
+	TYPTXTPollNormCd2 as emissionStandard,
+	TYPTotWgt as weight,
+	TYPLength as lenght,
+	TYPWidth as width
+FROM {DB_NAME}.type
+WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+	data_timestamp_part='{CURRENT_TIMESTAMP}';

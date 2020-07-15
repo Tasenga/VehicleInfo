@@ -1,0 +1,20 @@
+SELECT
+	TCOVehType as VehType,
+	TCONatCode as NatCode,
+	TCOCo2Emi as co2Emission,
+	TCOCo2EmiV2 as co2Emission2,
+	TCOConsUrb as urban,
+	TCOConsLand as extraUrban,
+	TCOConsTot as combined,
+	TCOConsUrbV2 as urban2,
+	TCOConsLandV2 as extraUrban2,
+	TCOConsTotV2 as combined2,
+	TCOConsGasUrb as gasUrban,
+	TCOConsGasLand as gasExtraUrban,
+	TCOConsGasTot as gasCombined,
+	TCOTXTConsGasUnitCd as gasUnit,
+	TCOConsPow as power,
+	TCOBatCap as batteryCapacity
+FROM {DB_NAME}.consumer
+WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+	data_timestamp_part='{CURRENT_TIMESTAMP}';

@@ -1,0 +1,6 @@
+SELECT
+	TXTCode,
+	TXTTextLong
+FROM {DB_NAME}.txttable
+WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
+	data_timestamp_part='{CURRENT_TIMESTAMP}';
