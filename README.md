@@ -37,6 +37,7 @@ This README documents steps are necessary to get this application up and running
 
   The configuration file contains following parameters:
 
+        mode: "short" or "full" (one word)
         source_folder: str (one word)
         db_name: str (one word)
         host: str (your MongoDB server host name)
@@ -47,6 +48,7 @@ This README documents steps are necessary to get this application up and running
     For example, text in config.ini:
 
         [PARAMETERS]
+        mode=full
         source_folder=data_source
         db_name=schwacke
         host=localhost
