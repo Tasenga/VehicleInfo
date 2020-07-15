@@ -30,9 +30,8 @@ def test_update_ddl() -> None:
         current_date='2020-07-14',
         current_timestamp='1594726338',
     )
-
+    ddl = DDL(configuration)
     try:
-        ddl = DDL(configuration)
         ddl.update_ddl(cwd=Path("D:\\project\\VehicleInfo"))
         with Path(ddl.mode_directory, f'{ddl.configuration.mode.value}_schwacke_hive_tables_ddl.txt').open(
             'r'
