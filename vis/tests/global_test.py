@@ -33,17 +33,14 @@ def test_run_main_short(spark_session: SparkSession) -> None:
         result_from_db = mongo_collection.read_from_mongodb()
         for dict in result_from_db:
             dict.pop('_id')
-        with Path(mode_folder, 'control_output.json').open(
-            'r'
-        ) as file_result:
+        with Path(mode_folder, 'control_short_output.json').open('r') as file_result:
             control_result = [loads(row) for row in file_result]
 
     finally:
         rmtree(
             Path(
-                tmp_table.tmp_table_folder,
-                f'{tmp_table.configuration.current_date}'
-                f'_{tmp_table.configuration.current_timestamp}',
+                tmp_table.result_table_folder,
+                f'{tmp_table.configuration.current_date}' f'_{tmp_table.configuration.current_timestamp}',
             ),
             ignore_errors=True,
         )

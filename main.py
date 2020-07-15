@@ -40,23 +40,24 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def run_main(
-    spark: SparkSession, configuration: Configuration
-) -> Tuple[DataFrameWorker, DatabaseWorker]:
+def run_main(spark: SparkSession, configuration: Configuration) -> Tuple[DataFrameWorker, DatabaseWorker]:
 
-    ddl = DDL(configuration=configuration)
+    ddl = DDL(
+        configuration=configuration, template_file_name=f'{configuration.mode.value}_create_table_template_ddl.txt'
+    )
 
     ddl.update_ddl()
     ddl.run_ddl(spark)
 
-    tmp_table = DataFrameWorker.create_tmp_table(spark, configuration)
+    if configuration.mode.value == 'short':
+        tmp_table = DataFrameWorker.create_short_tmp_table(spark, configuration)
+    else:
+        tmp_table = DataFrameWorker.create_short_tmp_table(spark, configuration)  # TODO
 
     tmp_table.write_to_file()
     _LOGGER.debug('''json file with resulting data was created''')
 
-    mongo_collection = DatabaseWorker.connect(
-        configuration.host, configuration.port, tmp_table
-    )
+    mongo_collection = DatabaseWorker.connect(configuration.host, configuration.port, tmp_table)
     mongo_collection.write_to_mongodb()
     _LOGGER.debug('''data was added to mongodb''')
     return tmp_table, mongo_collection
@@ -70,9 +71,7 @@ if __name__ == '__main__':
     configuration = Configuration.from_file(config_file)
     _LOGGER.debug(f"current configuration {configuration}")
 
-    with SparkSession.builder.appName(
-        'VehicleInfo'
-    ).enableHiveSupport().getOrCreate() as spark:
+    with SparkSession.builder.appName('VehicleInfo').enableHiveSupport().getOrCreate() as spark:
         spark.sparkContext.setLogLevel('ERROR')
         logging.basicConfig(
             stream=sys.stdout,

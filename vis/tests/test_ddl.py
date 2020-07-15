@@ -30,18 +30,16 @@ def test_update_ddl() -> None:
         current_date='2020-07-14',
         current_timestamp='1594726338',
     )
-    ddl = DDL(configuration)
+    ddl = DDL(configuration, 'full_create_table_template_ddl.txt')
     try:
         ddl.update_ddl(cwd=Path("D:\\project\\VehicleInfo"))
-        with Path(ddl.mode_directory, f'{ddl.configuration.mode.value}_schwacke_hive_tables_ddl.txt').open(
-            'r'
-        ) as ddl_file:
+        with Path(f'{ddl.ddl_directory}', f'{ddl.file_ddl}').open('r') as ddl_file:
             text_ddl = ddl_file.read()
 
-        with Path(ddl.mode_directory, 'control_schwacke_hive_tables_ddl.txt').open('r') as control_ddl_file:
+        with Path(f'{ddl.ddl_directory}', 'test_create_table_ddl.txt').open('r') as control_ddl_file:
             control_ddl = control_ddl_file.read()
     finally:
-        remove(Path(ddl.mode_directory, f'{ddl.configuration.mode.value}_schwacke_hive_tables_ddl.txt'))
+        remove(Path(f'{ddl.file_ddl}'))
 
     assert text_ddl == control_ddl
 
@@ -87,7 +85,7 @@ class TestRunDDL:
         current_date='test',
         current_timestamp='1',
     )
-    ddl = DDL(configuration)
+    ddl = DDL(configuration, 'test.txt')
     cwd = str(Path.cwd()).replace('\\', '/')
 
     def setup(self) -> None:
@@ -115,7 +113,6 @@ class TestRunDDL:
             )
 
     def teardown(self) -> None:
-        remove(Path(self.ddl.mode_directory, f'{self.ddl.configuration.mode.value}_schwacke_hive_tables_ddl.txt'))
         spark.sql(f'''DROP DATABASE {self.ddl.configuration.db_name} CASCADE''')
 
     def test_correct_data_type(self, param_test: List[Any]) -> None:
