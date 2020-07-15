@@ -40,7 +40,8 @@ def test_run_main_short(spark_session: SparkSession) -> None:
         rmtree(
             Path(
                 tmp_table.result_table_folder,
-                f'{tmp_table.configuration.current_date}' f'_{tmp_table.configuration.current_timestamp}',
+                f'{configuration.db_name}_{tmp_table.configuration.current_date}'
+                f'_{tmp_table.configuration.current_timestamp}',
             ),
             ignore_errors=True,
         )

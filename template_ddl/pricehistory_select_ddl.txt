@@ -5,8 +5,8 @@ SELECT
 	PRHNP1 as gross,
 	PRHNP2 as net,
 	PRHTaxRt as taxRate,
-	PRHVal as beginDate,
-	PRHValUntil as endDate
+	TO_DATE(PRHVal, 'yyyyMMdd') as beginDate,
+	TO_DATE(PRHValUntil, 'yyyyMMdd') as endDate
 FROM {DB_NAME}.pricehistory
 WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
 	data_timestamp_part='{CURRENT_TIMESTAMP}';

@@ -42,12 +42,11 @@ def get_parser() -> argparse.ArgumentParser:
 
 def run_main(spark: SparkSession, configuration: Configuration) -> Tuple[DataFrameWorker, DatabaseWorker]:
 
-    ddl = DDL(
+    create_table_ddl = DDL(
         configuration=configuration, template_file_name=f'{configuration.mode.value}_create_table_template_ddl.txt'
     )
-
-    ddl.update_ddl()
-    ddl.run_ddl(spark)
+    create_table_ddl.update_ddl()
+    create_table_ddl.run_ddl(spark)
 
     if configuration.mode.value == 'short':
         tmp_table = DataFrameWorker.create_short_tmp_table(spark, configuration)
