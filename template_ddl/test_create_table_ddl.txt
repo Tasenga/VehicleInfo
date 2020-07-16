@@ -604,25 +604,6 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS schwacke_test_full.eqtext (
-            EQTMarket VARCHAR(2),
-            EQTVehType SMALLINT,
-            EQTEQCode INT,
-            EQTLangCode VARCHAR(4),
-            EQTText VARCHAR(600),
-            EQTShort VARCHAR(40),
-            EQTDevalCode SMALLINT,
-            EQTGroupCode SMALLINT,
-            EQTRecStatus SMALLINT,
-            EQTRecDate VARCHAR(8),
-            EQTSort INT,
-            EQTImpCode VARCHAR(1)
-)
-PARTITIONED BY(data_date_part STRING, data_timestamp_part STRING)
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\t'
-STORED AS TEXTFILE;
-
 CREATE TABLE IF NOT EXISTS schwacke_test_full.manufactor (
             MANMarket VARCHAR(2),
             MANVehType SMALLINT,
@@ -776,13 +757,6 @@ INTO TABLE schwacke_test_full.manucol
 
 LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/ADDITION.gkp"
 INTO TABLE schwacke_test_full.addition
-    PARTITION(
-        data_date_part='2020-07-14',
-        data_timestamp_part='1594726338'
-    );
-
-LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/EQTEXT.gkp"
-INTO TABLE schwacke_test_full.eqtext
     PARTITION(
         data_date_part='2020-07-14',
         data_timestamp_part='1594726338'

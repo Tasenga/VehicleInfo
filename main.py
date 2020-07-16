@@ -51,7 +51,7 @@ def run_main(spark: SparkSession, configuration: Configuration) -> Tuple[DataFra
     if configuration.mode.value == 'short':
         tmp_table = DataFrameWorker.create_short_tmp_table(spark, configuration)
     else:
-        tmp_table = DataFrameWorker.create_short_tmp_table(spark, configuration)  # TODO
+        tmp_table = DataFrameWorker.create_full_tmp_table(spark, configuration)
 
     tmp_table.write_to_file()
     _LOGGER.debug('''json file with resulting data was created''')
