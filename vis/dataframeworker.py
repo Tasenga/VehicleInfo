@@ -320,19 +320,6 @@ def fin_aggregation(
     '''
     Function returns resulting dataframe with schema:
          |-- schwackeCode: string (nullable = true)
-         |-- name: string (nullable = true)
-         |-- name2: string (nullable = true)
-         |-- bodyType: string (nullable = true)
-         |-- driveType: string (nullable = true)
-         |-- transmissionType: string (nullable = true)
-         |-- productionBegin: date (nullable = true)
-         |-- productionEnd: date (nullable = true)
-         |-- doors: short (nullable = true)
-         |-- seats: short (nullable = true)
-         |-- weight: integer (nullable = true)
-         |-- dimentions: struct (nullable = false)
-         |    |-- lenght: integer (nullable = true)
-         |    |-- width: short (nullable = true)
          |-- model: struct (nullable = true)
          |    |-- schwackeCode: integer (nullable = true)
          |    |-- name: string (nullable = true)
@@ -346,6 +333,21 @@ def fin_aggregation(
          |    |-- make: struct (nullable = false)
          |    |    |-- schwackeCode: integer (nullable = true)
          |    |    |-- name: string (nullable = true)
+         |-- name: string (nullable = true)
+         |-- name2: string (nullable = true)
+         |-- bodyType: string (nullable = true)
+         |-- driveType: string (nullable = true)
+         |-- transmissionType: string (nullable = true)
+         |-- productionBegin: date (nullable = true)
+         |-- productionEnd: date (nullable = true)
+         |-- prices: array (nullable = true)
+         |    |-- element: struct (containsNull = false)
+         |    |    |-- currency: string (nullable = true)
+         |    |    |-- net: decimal(13,2) (nullable = true)
+         |    |    |-- gross: decimal(13,2) (nullable = true)
+         |    |    |-- taxRate: decimal(4,2) (nullable = true)
+         |    |    |-- beginDate: date (nullable = true)
+         |    |    |-- endDate: date (nullable = true)
          |-- wheels: struct (nullable = true)
          |    |-- front: struct (nullable = false)
          |    |    |-- rimWidth: string (nullable = true)
@@ -361,6 +363,12 @@ def fin_aggregation(
          |    |    |    |-- width: string (nullable = true)
          |    |    |    |-- aspectRatio: string (nullable = true)
          |    |    |    |-- construction: string (nullable = true)
+         |-- doors: short (nullable = true)
+         |-- seats: short (nullable = true)
+         |-- weight: integer (nullable = true)
+         |-- dimensions: struct (nullable = false)
+         |    |-- lenght: integer (nullable = true)
+         |    |-- width: short (nullable = true)
          |-- engine: struct (nullable = true)
          |    |-- engineType: string (nullable = true)
          |    |-- fuelType: string (nullable = true)
@@ -386,6 +394,10 @@ def fin_aggregation(
          |    |    |-- gasUnit: string (nullable = true)
          |    |    |-- power: decimal(4,1) (nullable = true)
          |    |    |-- batteryCapacity: short (nullable = true)
+         |-- certifications: array (nullable = true)
+         |    |-- element: struct (containsNull = false)
+         |    |    |-- hsn: string (nullable = true)
+         |    |    |-- tsn: string (nullable = true)
          |-- features: array (nullable = true)
          |    |-- element: struct (containsNull = false)
          |    |    |-- id: integer (nullable = true)
@@ -413,18 +425,6 @@ def fin_aggregation(
          |    |    |    |    |-- name: string (nullable = true)
          |    |    |    |    |-- mainGroup: string (nullable = true)
          |    |    |    |    |-- subGroup: string (nullable = true)
-         |-- prices: array (nullable = true)
-         |    |-- element: struct (containsNull = false)
-         |    |    |-- currency: string (nullable = true)
-         |    |    |-- net: decimal(13,2) (nullable = true)
-         |    |    |-- gross: decimal(13,2) (nullable = true)
-         |    |    |-- taxRate: decimal(4,2) (nullable = true)
-         |    |    |-- beginDate: date (nullable = true)
-         |    |    |-- endDate: date (nullable = true)
-         |-- certifications: array (nullable = true)
-         |    |-- element: struct (containsNull = false)
-         |    |    |-- hsn: string (nullable = true)
-         |    |    |-- tsn: string (nullable = true)
     '''
 
     prices = prices.select(
@@ -446,7 +446,7 @@ def fin_aggregation(
         'doors',
         'seats',
         'weight',
-        struct('lenght', 'width').alias('dimentions'),
+        struct('lenght', 'width').alias('dimensions'),
     )
     for column in ['bodyType', 'driveType', 'transmissionType']:
         variants = type_replace(variants, txttable, column)
@@ -467,6 +467,26 @@ def fin_aggregation(
         final_table = final_table.join(df, key, m)
 
     final_table = final_table.withColumnRenamed('NatCode', 'schwackeCode').drop('VehType', 'TYPModCd')
+    final_table = final_table.select(
+        'schwackeCode',
+        'model',
+        'name',
+        'name2',
+        'bodyType',
+        'driveType',
+        'transmissionType',
+        'productionBegin',
+        'productionEnd',
+        'prices',
+        'wheels',
+        'doors',
+        'seats',
+        'weight',
+        'dimensions',
+        'engine',
+        'certifications',
+        'features',
+    )
     return final_table
 
 
