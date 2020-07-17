@@ -1,51 +1,73 @@
+#  type: ignore
+
 from pathlib import Path
 from shutil import copy, rmtree
 from datetime import datetime
 from json import loads
 
 from pyspark.sql import SparkSession
+import pytest
 
 from main import run_main
 from vis.configuration import Configuration
 
 
-def test_run_main_short(spark_session: SparkSession) -> None:
+configuration_short = Configuration(
+    mode='short',
+    source_folder='test_data_source',
+    db_name='schwacke_test',
+    host='localhost',
+    port=27017,
+    current_date=str(datetime.now().date()),
+    current_timestamp=str(int(datetime.now().timestamp())),
+)
 
-    configuration = Configuration(
-        mode='short',
-        source_folder='test_data_source',
-        db_name='schwacke_test',
-        host='localhost',
-        port=27017,
-        current_date=str(datetime.now().date()),
-        current_timestamp=str(int(datetime.now().timestamp())),
-    )
+configuration_full = Configuration(
+    mode='full',
+    source_folder='test_data_source',
+    db_name='schwacke_test',
+    host='localhost',
+    port=27017,
+    current_date=str(datetime.now().date()),
+    current_timestamp=str(int(datetime.now().timestamp())),
+)
 
-    mode_folder = Path(Path.cwd(), configuration.source_folder)
+
+def setup() -> None:
+    mode_folder = Path(Path.cwd(), 'test_data_source')
     for path in Path(mode_folder, 'archive').iterdir():
         if path.is_file():
             copy(str(path), str(Path(mode_folder)))
 
+
+def teardown() -> None:
+    rmtree(
+        Path(
+            tmp_table.result_table_folder,
+            f'{tmp_table.configuration.db_name}_{tmp_table.configuration.mode.value}_'
+            f'{tmp_table.configuration.current_date}_{tmp_table.configuration.current_timestamp}',
+        ),
+        ignore_errors=True,
+    )
+    mongo_collection.drop_collection_mongodb()
+
+
+@pytest.mark.parametrize("configuration", [configuration_short, configuration_full])
+@pytest.mark.critital_tests
+def test_run_main(spark_session: SparkSession, configuration: Configuration) -> None:
+    global tmp_table, mongo_collection
     tmp_table, mongo_collection = run_main(spark_session, configuration)
+    result_from_file = tmp_table.read_from_file()
+    result_from_db = mongo_collection.read_from_mongodb()
+    for dict in result_from_db:
+        dict.pop('_id')
+    if configuration.mode.value == "short":
+        control_file_path = Path(Path.cwd(), configuration.source_folder, 'control_short_output.json')
+    else:
+        control_file_path = Path(Path.cwd(), configuration.source_folder, 'control_full_output.json')
 
-    try:
-        result_from_file = tmp_table.read_from_file()
-        result_from_db = mongo_collection.read_from_mongodb()
-        for dict in result_from_db:
-            dict.pop('_id')
-        with Path(mode_folder, 'control_short_output.json').open('r') as file_result:
-            control_result = [loads(row) for row in file_result]
-
-    finally:
-        rmtree(
-            Path(
-                tmp_table.result_table_folder,
-                f'{configuration.db_name}_{configuration.mode.value}_'
-                f'{configuration.current_date}_{configuration.current_timestamp}',
-            ),
-            ignore_errors=True,
-        )
-        mongo_collection.drop_collection_mongodb()
+    with control_file_path.open('r') as file_result:
+        control_result = [loads(row) for row in file_result]
 
     assert result_from_db == control_result
     assert result_from_file == control_result

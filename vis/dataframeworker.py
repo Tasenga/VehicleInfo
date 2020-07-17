@@ -91,10 +91,10 @@ def map_model_block(model: DF, make: DF) -> DF:
     '''
     model = model.alias('model').withColumn(
         'vehicleClass',
-        when(col('TYPModCd') == 10, "Personenwagen")
-        .when(col('TYPModCd') == 20, "Transporter")
-        .when(col('TYPModCd') == 30, "Zweirad")
-        .when(col('TYPModCd') == 40, "Gelandewagen")
+        when(col('VehType') == 10, "Personenwagen")
+        .when(col('VehType') == 20, "Transporter")
+        .when(col('VehType') == 30, "Zweirad")
+        .when(col('VehType') == 40, "Gelandewagen")
         .otherwise(None),
     )
     model = model.join(make.alias('make'), ['VehType', 'schwackeCode'], 'left')
@@ -148,7 +148,6 @@ def map_color_block(typecol: DF, manucol: DF, eurocol: DF) -> DF:
          |-- id: integer (nullable = true)
          |-- color: array (nullable = true)
          |    |-- element: struct (containsNull = false)
-         |    |    |-- id: integer (nullable = true)
          |    |    |-- orderCode: string (nullable = true)
          |    |    |-- basicColorName: string (nullable = true)
          |    |    |-- basicColorCode: short (nullable = true)
@@ -161,7 +160,7 @@ def map_color_block(typecol: DF, manucol: DF, eurocol: DF) -> DF:
         .select(
             'id',
             struct(
-                'id', 'orderCode', 'basicColorName', 'basicColorCode', 'manufacturerColorName', 'manufacturerColorType'
+                'orderCode', 'basicColorName', 'basicColorCode', 'manufacturerColorName', 'manufacturerColorType'
             ).alias('colors'),
         )
         .groupBy('id')
@@ -214,7 +213,7 @@ def map_feature_block(addition: DF, color_block: DF, manufactor: DF, esaco_block
                 'priceGross',
                 'beginDate',
                 'endDate',
-                when(col('isOptional') == 0, False).otherwise(True),
+                when(col('isOptional') == 0, False).otherwise(True).alias('isOptional'),
                 'manufacturerCode',
                 'flagPack',
                 'targetGroup',
@@ -414,7 +413,6 @@ def fin_aggregation(
          |    |    |-- currency: string (nullable = true)
          |    |    |-- colors: array (nullable = true)
          |    |    |    |-- element: struct (containsNull = false)
-         |    |    |    |    |-- id: integer (nullable = true)
          |    |    |    |    |-- orderCode: string (nullable = true)
          |    |    |    |    |-- basicColorName: string (nullable = true)
          |    |    |    |    |-- basicColorCode: short (nullable = true)
