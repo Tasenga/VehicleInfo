@@ -59,8 +59,8 @@ def test_run_main(spark_session: SparkSession, configuration: Configuration) -> 
     tmp_table, mongo_collection = run_main(spark_session, configuration)
     result_from_file = tmp_table.read_from_file()
     result_from_db = mongo_collection.read_from_mongodb()
-    for dict in result_from_db:
-        dict.pop('_id')
+    for dictionary in result_from_db:
+        dictionary.pop('_id')
     if configuration.mode.value == "short":
         control_file_path = Path(Path.cwd(), configuration.source_folder, 'control_short_output.json')
     else:

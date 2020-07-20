@@ -9,7 +9,7 @@ from pyspark.sql import SparkSession
 from vis.ddl_processing import DDL
 from vis.dataframeworker import DataFrameWorker
 from vis.databaseworker import DatabaseWorker
-from vis.configuration import Configuration
+from vis.configuration import Configuration, Mode
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ def run_main(spark: SparkSession, configuration: Configuration) -> Tuple[DataFra
     create_table_ddl.update_ddl()
     create_table_ddl.run_ddl(spark)
 
-    if configuration.mode.value == 'short':
+    if configuration.mode == Mode.short:
         tmp_table = DataFrameWorker.create_short_tmp_table(spark, configuration)
     else:
         tmp_table = DataFrameWorker.create_full_tmp_table(spark, configuration)
