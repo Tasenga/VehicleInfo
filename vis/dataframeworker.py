@@ -145,11 +145,16 @@ def map_esaco_block(esajoin: DF, esaco: DF, txttable: DF) -> DF:
     '''
 
     esaco_col = [
-        esaco[dsc.ESACO.ESGTXTCodeCd2.fin_name].alias('name'),
+        'name',
         dsc.ESACO.ESGTXTMainGrpCd2.fin_name,
         dsc.ESACO.ESGTXTSubGrpCd2.fin_name,
     ]
-    esaco = esaco.select(dsc.ESACO.ESGTXTCodeCd2.fin_name, esaco_col)
+    esaco = esaco.select(
+        dsc.ESACO.ESGTXTCodeCd2.fin_name,
+        esaco[dsc.ESACO.ESGTXTCodeCd2.fin_name].alias('name'),
+        dsc.ESACO.ESGTXTMainGrpCd2.fin_name,
+        dsc.ESACO.ESGTXTSubGrpCd2.fin_name,
+    )
 
     for column in esaco_col:
         esaco = type_replace(esaco, txttable, column)
@@ -177,18 +182,25 @@ def map_color_block(typecol: DF, manucol: DF, eurocol: DF) -> DF:
          |    |    |-- manufacturerColorName: string (nullable = true)
          |    |    |-- manufacturerColorType: short (nullable = true)
     '''
+
     colors = (
-        typecol.join(manucol, 'TCLMCLColCd', 'left')
-        .join(eurocol, 'basicColorCode', 'left')
+        typecol.join(manucol, dsc.MANUCOL.MCLManColCode.fin_name, 'left')
+        .join(eurocol, dsc.EUROCOL.ECLColID.fin_name, 'left')
         .select(
-            'id',
+            dsc.TYPECOL.TCLTypEqtCode.fin_name,
             struct(
-                'orderCode', 'basicColorName', 'basicColorCode', 'manufacturerColorName', 'manufacturerColorType'
+                dsc.TYPECOL.TCLOrdCd.fin_name,
+                dsc.EUROCOL.ECLColName.fin_name,
+                dsc.EUROCOL.ECLColID.fin_name,
+                dsc.MANUCOL.MCLColName.fin_name,
+                dsc.MANUCOL.MCLPaintTrimFlag.fin_name,
             ).alias('colors'),
         )
-        .groupBy('id')
+        .groupBy(dsc.TYPECOL.TCLTypEqtCode.fin_name)
         .agg(collect_set('colors').alias('colors'))
     )
+
+    colors.show()
     colors.printSchema()
     return colors
 
@@ -227,25 +239,27 @@ def map_feature_block(addition: DF, color_block: DF, manufactor: DF, esaco_block
     ).withColumn(dsc.ADDITION.ADDValUntil.fin_name, to_date(addition[dsc.ADDITION.ADDValUntil.fin_name], 'yyyyMMdd'))
 
     features = (
-        addition.join(manufactor, 'code', 'left')
-        .join(color_block, 'id', 'left')
-        .join(esaco_block, 'code', 'left')
+        addition.join(manufactor, dsc.MANUFACTOR.MANEQTEQCodeCd.fin_name, 'left')
+        .join(color_block, dsc.TYPECOL.TCLTypEqtCode.fin_name, 'left')
+        .join(esaco_block, dsc.ESAJOIN.ESJEQTEQCodeCd.fin_name, 'left')
         .select(
-            'VehType',
-            'NatCode',
+            dsc.ADDITION.ADDVehType.fin_name,
+            dsc.ADDITION.ADDNatCode.fin_name,
             struct(
-                'id',
-                'code',
-                'priceNet',
-                'priceGross',
-                'beginDate',
-                'endDate',
-                when(col('isOptional') == 0, False).otherwise(True).alias('isOptional'),
-                'manufacturerCode',
-                'flagPack',
-                'targetGroup',
-                'taxRate',
-                'currency',
+                dsc.MANUFACTOR.MANEQTEQCodeCd.fin_name,
+                dsc.TYPECOL.TCLTypEqtCode.fin_name,
+                dsc.ADDITION.ADDPrice2.fin_name,
+                dsc.ADDITION.ADDPrice1.fin_name,
+                dsc.ADDITION.ADDVal.fin_name,
+                dsc.ADDITION.ADDValUntil.fin_name,
+                when(col(dsc.ADDITION.ADDFlag.fin_name) == 0, False)
+                .otherwise(True)
+                .alias(dsc.ADDITION.ADDFlag.fin_name),
+                dsc.MANUFACTOR.MANMCode.fin_name,
+                dsc.ADDITION.ADDFlagPack.fin_name,
+                dsc.ADDITION.ADDTargetGrp.fin_name,
+                dsc.ADDITION.ADDTaxRt.fin_name,
+                dsc.ADDITION.ADDCurrency.fin_name,
                 'colors',
                 'esacos',
             ).alias('features'),
@@ -287,14 +301,15 @@ def map_engine_block(type: DF, consumer: DF, typ_envkv: DF, technic: DF, txttabl
          |    |    |-- batteryCapacity: short (nullable = true)
 
     '''
-    for column in ['fuelType', 'emissionStandard']:
+
+    for column in [dsc.TYPE.TYPTXTFuelTypeCd2.fin_name, dsc.TYPE.TYPTXTPollNormCd2.fin_name]:
         type = type_replace(type, txttable, column)
 
-    technic = type_replace(technic, txttable, 'engineType')
-    typ_envkv = type_replace(typ_envkv, txttable, 'energyEfficiencyClass')
-    consumer = type_replace(consumer, txttable, 'gasUnit')
+    technic = type_replace(technic, txttable, dsc.TECHNIC.TECTXTEngTypeCd2.fin_name)
+    typ_envkv = type_replace(typ_envkv, txttable, dsc.TYP_ENVKV.TENCo2EffClassCd2.fin_name)
+    consumer = type_replace(consumer, txttable, dsc.CONSUMER.TCOTXTConsGasUnitCd.fin_name)
 
-    key = ['VehType', 'NatCode']
+    key = [dsc.TYPE.TYPVehType.fin_name, dsc.TYPE.TYPNatCode.fin_name]
     m = 'left'
 
     engine = (
@@ -302,35 +317,37 @@ def map_engine_block(type: DF, consumer: DF, typ_envkv: DF, technic: DF, txttabl
         .join(typ_envkv, key, m)
         .join(consumer, key, m)
         .select(
-            'VehType',
-            'NatCode',
+            dsc.TYPE.TYPVehType.fin_name,
+            dsc.TYPE.TYPNatCode.fin_name,
             struct(
-                'engineType',
-                'fuelType',
-                'cylinders',
-                'displacement',
-                'co2Emission',
-                'co2Emission2',
-                'emissionStandard',
-                'energyEfficiencyClass',
-                struct('ps', 'kw').alias('power'),
+                dsc.TECHNIC.TECTXTEngTypeCd2.fin_name,
+                dsc.TYPE.TYPTXTFuelTypeCd2.fin_name,
+                dsc.TYPE.TYPCylinder.fin_name,
+                dsc.TYPE.TYPCapTech.fin_name,
+                dsc.CONSUMER.TCOCo2Emi.fin_name,
+                dsc.CONSUMER.TCOCo2EmiV2.fin_name,
+                dsc.TYPE.TYPTXTPollNormCd2.fin_name,
+                dsc.TYP_ENVKV.TENCo2EffClassCd2.fin_name,
+                struct(dsc.TYPE.TYPHP.fin_name, dsc.TYPE.TYPKW.fin_name).alias('power'),
                 struct(
-                    'urban',
-                    'extraUrban',
-                    'combined',
-                    'urban2',
-                    'extraUrban2',
-                    'combined2',
-                    'gasUrban',
-                    'gasExtraUrban',
-                    'gasCombined',
-                    'gasUnit',
-                    'power',
-                    'batteryCapacity',
+                    dsc.CONSUMER.TCOConsUrb.fin_name,
+                    dsc.CONSUMER.TCOConsLand.fin_name,
+                    dsc.CONSUMER.TCOConsTot.fin_name,
+                    dsc.CONSUMER.TCOConsUrbV2.fin_name,
+                    dsc.CONSUMER.TCOConsLandV2.fin_name,
+                    dsc.CONSUMER.TCOConsTotV2.fin_name,
+                    dsc.CONSUMER.TCOConsGasUrb.fin_name,
+                    dsc.CONSUMER.TCOConsGasLand.fin_name,
+                    dsc.CONSUMER.TCOConsGasTot.fin_name,
+                    dsc.CONSUMER.TCOTXTConsGasUnitCd.fin_name,
+                    dsc.CONSUMER.TCOConsPow.fin_name,
+                    dsc.CONSUMER.TCOBatCap.fin_name,
                 ).alias('fuelConsumption'),
             ).alias('engine'),
         )
     )
+
+    engine.show()
     engine.printSchema()
     return engine
 
@@ -455,36 +472,57 @@ def fin_aggregation(
     '''
 
     prices = prices.select(
-        'VehType', 'NatCode', struct('currency', 'net', 'gross', 'taxRate', 'beginDate', 'endDate').alias('prices')
+        dsc.PRICEHISTORY.PRHVehType.fin_name,
+        dsc.PRICEHISTORY.PRHNatCode.fin_name,
+        struct(
+            dsc.PRICEHISTORY.PRHCurrency.fin_name,
+            dsc.PRICEHISTORY.PRHNP2.fin_name,
+            dsc.PRICEHISTORY.PRHNP1.fin_name,
+            dsc.PRICEHISTORY.PRHTaxRt.fin_name,
+            to_date(prices[dsc.PRICEHISTORY.PRHVal.fin_name], 'yyyyMMdd').alias(dsc.PRICEHISTORY.PRHVal.fin_name),
+            to_date(prices[dsc.PRICEHISTORY.PRHValUntil.fin_name], 'yyyyMMdd').alias(
+                dsc.PRICEHISTORY.PRHValUntil.fin_name
+            ),
+        ).alias('prices'),
     )
-    tcert = tcert.alias('tcert').select('VehType', 'NatCode', struct('hsn', 'tsn').alias('certifications'))
+
+    tcert = tcert.select(
+        dsc.TCERT.TCEVehType.fin_name,
+        dsc.TCERT.TCENatCode.fin_name,
+        struct(dsc.TCERT.TCENum.fin_name, dsc.TCERT.TCENum2.fin_name).alias('certifications'),
+    )
 
     variants = type.select(
-        'VehType',
-        'NatCode',
-        'TYPModCd',
-        'name',
-        'name2',
-        'bodyType',
-        'driveType',
-        'transmissionType',
-        'productionBegin',
-        'productionEnd',
-        'doors',
-        'seats',
-        'weight',
-        struct('lenght', 'width').alias('dimensions'),
+        dsc.TYPE.TYPVehType.fin_name,
+        dsc.TYPE.TYPNatCode.fin_name,
+        dsc.TYPE.TYPModCd.fin_name,
+        dsc.TYPE.TYPName.fin_name,
+        dsc.TYPE.TYPName2.fin_name,
+        dsc.TYPE.TYPTXTBodyCo1Cd2.fin_name,
+        dsc.TYPE.TYPTXTDriveTypeCd2.fin_name,
+        dsc.TYPE.TYPTXTTransTypeCd2.fin_name,
+        to_date(type[dsc.TYPE.TYPImpBegin.fin_name], 'yyyyMM').alias(dsc.TYPE.TYPImpBegin.fin_name),
+        to_date(type[dsc.TYPE.TYPImpEnd.fin_name], 'yyyyMM').alias(dsc.TYPE.TYPImpEnd.fin_name),
+        dsc.TYPE.TYPDoor.fin_name,
+        dsc.TYPE.TYPSeat.fin_name,
+        dsc.TYPE.TYPTotWgt.fin_name,
+        struct(dsc.TYPE.TYPLength.fin_name, dsc.TYPE.TYPWidth.fin_name).alias('dimensions'),
     )
-    for column in ['bodyType', 'driveType', 'transmissionType']:
+    for column in [
+        dsc.TYPE.TYPTXTBodyCo1Cd2.fin_name,
+        dsc.TYPE.TYPTXTDriveTypeCd2.fin_name,
+        dsc.TYPE.TYPTXTTransTypeCd2.fin_name,
+    ]:
         variants = type_replace(variants, txttable, column)
 
     unit_blocks = {"wheel": wheel_block, 'engine': engine_block}
     multiple_blocks = {'features': feature_block, "prices": prices, 'certifications': tcert}
 
-    key = ['VehType', 'NatCode']
+    key = [dsc.TYPE.TYPVehType.fin_name, dsc.TYPE.TYPNatCode.fin_name]
     m = 'left'
 
-    final_table = variants.join(model_block, ['VehType', 'TYPModCd'], m)
+    model_block_key = [dsc.TYPE.TYPVehType.fin_name, dsc.TYPE.TYPModCd.fin_name]
+    final_table = variants.join(model_block, model_block_key, m)
 
     for name, df in unit_blocks.items():
         final_table = final_table.join(df, key, m)
@@ -493,27 +531,32 @@ def fin_aggregation(
         df = df.groupBy(key).agg(collect_set(name).alias(name))
         final_table = final_table.join(df, key, m)
 
-    final_table = final_table.withColumnRenamed('NatCode', 'schwackeCode').drop('VehType', 'TYPModCd')
+    final_table = final_table.withColumnRenamed(dsc.TYPE.TYPNatCode.fin_name, 'schwackeCode').drop(
+        dsc.TYPE.TYPVehType.fin_name, dsc.TYPE.TYPModCd.fin_name
+    )
+
     final_table = final_table.select(
         'schwackeCode',
         'model',
-        'name',
-        'name2',
-        'bodyType',
-        'driveType',
-        'transmissionType',
-        'productionBegin',
-        'productionEnd',
+        dsc.TYPE.TYPName.fin_name,
+        dsc.TYPE.TYPName2.fin_name,
+        dsc.TYPE.TYPTXTBodyCo1Cd2.fin_name,
+        dsc.TYPE.TYPTXTDriveTypeCd2.fin_name,
+        dsc.TYPE.TYPTXTTransTypeCd2.fin_name,
+        dsc.TYPE.TYPImpBegin.fin_name,
+        dsc.TYPE.TYPImpEnd.fin_name,
         'prices',
         'wheels',
-        'doors',
-        'seats',
-        'weight',
+        dsc.TYPE.TYPDoor.fin_name,
+        dsc.TYPE.TYPSeat.fin_name,
+        dsc.TYPE.TYPTotWgt.fin_name,
         'dimensions',
         'engine',
         'certifications',
         'features',
     )
+
+    final_table.show()
     final_table.printSchema()
     return final_table
 
