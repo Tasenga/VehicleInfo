@@ -8,10 +8,12 @@ import re
 
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame as DF
-from pyspark.sql.functions import struct, col, when, collect_set
+from pyspark.sql.functions import struct, col, when, collect_set, to_date
+from pyspark.sql.types import IntegerType
 
-from .configuration import Configuration
-from .ddl_processing import DDL
+import vis.descriptor as dsc
+from vis.configuration import Configuration
+from vis.ddl_processing import DDL
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,9 +25,9 @@ def type_replace(main_df: DF, type_df: DF, replaced_column: str) -> DF:
     from the type table to the preliminary temporary table
     if the type code from both tables the same.'''
     return (
-        main_df.join(type_df, main_df[replaced_column] == type_df['TXTCode'], 'left')
-        .drop(replaced_column, "TXTCode")
-        .withColumnRenamed('TXTTextLong', replaced_column)
+        main_df.join(type_df, main_df[replaced_column] == type_df[dsc.TXTTABLE.TXTCode.fin_name], 'left')
+        .drop(replaced_column, dsc.TXTTABLE.TXTCode.fin_name)
+        .withColumnRenamed(dsc.TXTTABLE.TXTTextLong.fin_name, replaced_column)
     )
 
 
@@ -50,22 +52,23 @@ def map_wheel_block(jwheel: DF, tyres: DF, rims: DF) -> DF:
          |    |    |    |-- aspectRatio: string (nullable = true)
          |    |    |    |-- construction: string (nullable = true)
     '''
+    tyres_key = [dsc.TYRES.TYRVehType.fin_name, dsc.TYRES.JWHTYRTyreFCd.fin_name, dsc.TYRES.JWHTYRTyreRCd.fin_name]
+    rims_key = [dsc.RIMS.RIMVehType.fin_name, dsc.RIMS.JWHRIMRimFCd.fin_name, dsc.RIMS.JWHRIMRimRCd.fin_name]
+
+    tyres_col = [dsc.TYRES.TYRWidth.fin_name, dsc.TYRES.TYRCrossSec.fin_name, dsc.TYRES.TYRDesign.fin_name]
+    rims_col = [dsc.RIMS.RIMWidth.fin_name, dsc.RIMS.RIMDiameter.fin_name, struct(tyres_col).alias('tyre')]
+
     wheels = (
-        jwheel.join(tyres, ['VehType', 'JWHTYRTyreFCd', 'JWHTYRTyreRCd'], 'left')
-        .join(rims, ['VehType', 'JWHRIMRimFCd', 'JWHRIMRimRCd'], 'left')
+        jwheel.join(tyres, tyres_key, 'left')
+        .join(rims, rims_key, 'left')
         .select(
-            'VehType',
-            'NatCode',
-            struct(
-                struct('rimWidth', 'diameter', struct('width', 'aspectRatio', 'construction').alias('tyre')).alias(
-                    'front'
-                ),
-                struct('rimWidth', 'diameter', struct('width', 'aspectRatio', 'construction').alias('tyre')).alias(
-                    'rear'
-                ),
-            ).alias('wheels'),
+            dsc.JWHEEL.JWHVehType.fin_name,
+            dsc.JWHEEL.JWHNatCode.fin_name,
+            struct(struct(rims_col).alias('front'), struct(rims_col).alias('rear'),).alias('wheels'),
         )
     )
+    wheels.printSchema()
+    wheels.show()
     return wheels
 
 
@@ -89,32 +92,44 @@ def map_model_block(model: DF, make: DF) -> DF:
         |    |    |-- name: string (nullable = true)
 
     '''
-    model = model.alias('model').withColumn(
-        'vehicleClass',
-        when(col('VehType') == 10, "Personenwagen")
-        .when(col('VehType') == 20, "Transporter")
-        .when(col('VehType') == 30, "Zweirad")
-        .when(col('VehType') == 40, "Gelandewagen")
-        .otherwise(None),
-    )
-    model = model.join(make.alias('make'), ['VehType', 'schwackeCode'], 'left')
-    model = model.select(
-        'VehType',
-        'TYPModCd',
-        struct(
-            col('TYPModCd').alias('schwackeCode'),
-            'model.name',
-            'name2',
-            'serialCode',
-            'yearBegin',
-            'yearEnd',
-            'productionBegin',
-            'productionEnd',
+
+    model = (
+        model.withColumn(dsc.MODEL.MODImpBegin.fin_name, to_date(dsc.MODEL.MODImpBegin.fin_name, 'yyyyMMdd'))
+        .withColumn(dsc.MODEL.MODImpEnd.fin_name, to_date(dsc.MODEL.MODImpEnd.fin_name, 'yyyyMMdd'))
+        .withColumn(dsc.MODEL.MODBegin.fin_name, model[dsc.MODEL.MODBegin.fin_name].cast(IntegerType()))
+        .withColumn(dsc.MODEL.MODEnd.fin_name, model[dsc.MODEL.MODEnd.fin_name].cast(IntegerType()))
+        .withColumn(
             'vehicleClass',
-            struct('model.schwackeCode', 'make.name').alias('make'),
+            when(model[dsc.MODEL.MODVehType.fin_name] == 10, "Personenwagen")
+            .when(model[dsc.MODEL.MODVehType.fin_name] == 20, "Transporter")
+            .when(model[dsc.MODEL.MODVehType.fin_name] == 30, "Zweirad")
+            .when(model[dsc.MODEL.MODVehType.fin_name] == 40, "Gelandewagen")
+            .otherwise(None),
+        )
+    )
+
+    make_key = [dsc.MAKE.MAKVehType.fin_name, dsc.MAKE.MAKNatCode.fin_name]
+    model = model.join(make, make_key, 'left')
+
+    model = model.select(
+        dsc.MODEL.MODVehType.fin_name,
+        dsc.MODEL.MODNatCode.fin_name,
+        struct(
+            model[dsc.MODEL.MODNatCode.fin_name].alias('schwackeCode'),
+            model[dsc.MODEL.MODName.fin_name].alias('name'),
+            dsc.MODEL.MODName2.fin_name,
+            dsc.MODEL.MODModelSerCode.fin_name,
+            dsc.MODEL.MODBegin.fin_name,
+            dsc.MODEL.MODEnd.fin_name,
+            dsc.MODEL.MODImpBegin.fin_name,
+            dsc.MODEL.MODImpEnd.fin_name,
+            'vehicleClass',
+            struct(model[dsc.MAKE.MAKNatCode.fin_name], make[dsc.MAKE.MAKName.fin_name]).alias('make'),
         ).alias('model'),
     ).drop('schwackeCode')
 
+    model.show()
+    model.printSchema()
     return model
 
 
@@ -128,17 +143,25 @@ def map_esaco_block(esajoin: DF, esaco: DF, txttable: DF) -> DF:
          |    |    |-- mainGroup: string (nullable = true)
          |    |    |-- subGroup: string (nullable = true)
     '''
-    esaco = esaco.select('name', 'mainGroup', 'subGroup', col("name").alias("name2"))
-    replaced_columns = ['name2', 'mainGroup', 'subGroup']
-    for column in replaced_columns:
+
+    esaco_col = [
+        esaco[dsc.ESACO.ESGTXTCodeCd2.fin_name].alias('name'),
+        dsc.ESACO.ESGTXTMainGrpCd2.fin_name,
+        dsc.ESACO.ESGTXTSubGrpCd2.fin_name,
+    ]
+    esaco = esaco.select(dsc.ESACO.ESGTXTCodeCd2.fin_name, esaco_col)
+
+    for column in esaco_col:
         esaco = type_replace(esaco, txttable, column)
 
     esacos = (
-        esajoin.join(esaco, 'name', 'left')
-        .select('code', struct(col('name2').alias('name'), 'mainGroup', 'subGroup').alias('esacos'))
-        .groupBy('code')
+        esajoin.join(esaco, dsc.ESACO.ESGTXTCodeCd2.fin_name, 'left')
+        .select([dsc.ESAJOIN.ESJEQTEQCodeCd.fin_name, struct(esaco_col).alias('esacos')])
+        .groupBy(dsc.ESAJOIN.ESJEQTEQCodeCd.fin_name)
         .agg(collect_set('esacos').alias('esacos'))
     )
+    esacos.show()
+    esacos.printSchema()
     return esacos
 
 
@@ -166,7 +189,7 @@ def map_color_block(typecol: DF, manucol: DF, eurocol: DF) -> DF:
         .groupBy('id')
         .agg(collect_set('colors').alias('colors'))
     )
-
+    colors.printSchema()
     return colors
 
 
@@ -199,6 +222,10 @@ def map_feature_block(addition: DF, color_block: DF, manufactor: DF, esaco_block
          |    |-- subGroup: string (nullable = true) -> will replace data from txttable after fin_aggregation
     '''
 
+    addition = addition.withColumn(
+        dsc.ADDITION.ADDVal.fin_name, to_date(addition[dsc.ADDITION.ADDVal.fin_name], 'yyyyMMdd')
+    ).withColumn(dsc.ADDITION.ADDValUntil.fin_name, to_date(addition[dsc.ADDITION.ADDValUntil.fin_name], 'yyyyMMdd'))
+
     features = (
         addition.join(manufactor, 'code', 'left')
         .join(color_block, 'id', 'left')
@@ -224,6 +251,7 @@ def map_feature_block(addition: DF, color_block: DF, manufactor: DF, esaco_block
             ).alias('features'),
         )
     )
+    features.printSchema()
     return features
 
 
@@ -303,6 +331,7 @@ def map_engine_block(type: DF, consumer: DF, typ_envkv: DF, technic: DF, txttabl
             ).alias('engine'),
         )
     )
+    engine.printSchema()
     return engine
 
 
@@ -485,6 +514,7 @@ def fin_aggregation(
         'certifications',
         'features',
     )
+    final_table.printSchema()
     return final_table
 
 
@@ -508,7 +538,7 @@ class DataFrameWorker:
 
         df_list = {}
         for table in tables:
-            ddl = DDL(configuration, f'{table}_select_ddl.txt')
+            ddl = DDL(configuration, f'{table}_select_sql.txt')
             ddl.update_ddl()
             df_list[table] = ddl.run_ddl(spark)
 
@@ -531,33 +561,44 @@ class DataFrameWorker:
          aggregates it according to full mode and saves like pyspark dataframe object.
          '''
 
-        tables = [
-            "jwheel",
-            "rims",
-            "tyres",
-            "consumer",
-            "typ_envkv",
-            "make",
-            "model",
-            "type",
-            "pricehistory",
-            "technic",
-            "tcert",
-            "typecol",
-            "manucol",
-            "eurocol",
-            "addition",
-            "manufactor",
-            "esajoin",
-            "esaco",
-            "txttable",
-        ]
+        tables = {
+            'addition': dsc.ADDITION,
+            'consumer': dsc.CONSUMER,
+            'esaco': dsc.ESACO,
+            'esajoin': dsc.ESAJOIN,
+            'eurocol': dsc.EUROCOL,
+            'jwheel': dsc.JWHEEL,
+            'make': dsc.MAKE,
+            'manucol': dsc.MANUCOL,
+            'manufactor': dsc.MANUFACTOR,
+            'model': dsc.MODEL,
+            'pricehistory': dsc.PRICEHISTORY,
+            'rims': dsc.RIMS,
+            'tcert': dsc.TCERT,
+            'technic': dsc.TECHNIC,
+            'txttable': dsc.TXTTABLE,
+            'typ_envkv': dsc.TYP_ENVKV,
+            'type': dsc.TYPE,
+            'typecol': dsc.TYPECOL,
+            'tyres': dsc.TYRES,
+        }
 
         df_list = {}
-        for table in tables:
-            ddl = DDL(configuration, f'{table}_select_ddl.txt')
-            ddl.update_ddl()
-            df_list[table] = ddl.run_ddl(spark)
+        for tbl_name, tbl_columns in tables.items():
+            df_list[tbl_name] = (
+                spark.table(f'{configuration.db_name}_{configuration.mode.value}.{tbl_name}')
+                .filter(
+                    (col('data_date_part') == f'{configuration.current_date}')
+                    & (col('data_timestamp_part') == f'{configuration.current_timestamp}')
+                )
+                .select(
+                    [col(f'{column.old_name}').alias(f'{column.fin_name}') for column in tbl_columns.__dict__.values()]
+                )
+                .dropDuplicates()
+            )
+
+        df_list['typ_envkv'] = df_list['typ_envkv'].filter(col('TENINFOTYPE') == 1)
+        df_list['jwheel'] = df_list['jwheel'].filter(col('JWHisStd') == 1)
 
         wheel_block = map_wheel_block(jwheel=df_list["jwheel"], tyres=df_list["tyres"], rims=df_list["rims"])
 
