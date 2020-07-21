@@ -1,6 +1,0 @@
-SELECT
-	ESJEQTEQCodeCd as code,
-	ESJTXTESACOCd2 as name
-FROM {DB_NAME}.esajoin
-WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
-	data_timestamp_part='{CURRENT_TIMESTAMP}';

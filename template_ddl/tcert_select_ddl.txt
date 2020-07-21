@@ -1,8 +1,0 @@
-SELECT
-	TCEVehType as VehType,
-	TCENatCode as NatCode,
-	TCENum as hsn,
-	TCENum2 as tsn
-FROM {DB_NAME}.tcert
-WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
-	data_timestamp_part='{CURRENT_TIMESTAMP}';

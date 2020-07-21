@@ -1,8 +1,0 @@
-SELECT
-	TENVehType as VehType,
-	TENNatCode as NatCode,
-	TENCo2EffClassCd2 as energyEfficiencyClass
-FROM {DB_NAME}.typ_envkv
-WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
-	data_timestamp_part='{CURRENT_TIMESTAMP}' AND
-	TENINFOTYPE = 1;

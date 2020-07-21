@@ -1,7 +1,0 @@
-SELECT
-	ESGTXTCodeCd2 as name,
-	ESGTXTMainGrpCd2 as mainGroup,
-	ESGTXTSubGrpCd2 as subGroup
-FROM {DB_NAME}.esaco
-WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
-	data_timestamp_part='{CURRENT_TIMESTAMP}';

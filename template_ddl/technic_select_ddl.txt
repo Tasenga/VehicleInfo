@@ -1,7 +1,0 @@
-SELECT
-	TECVehType as VehType,
-	TECNatCode as NatCode,
-	TECTXTEngTypeCd2 as engineType
-FROM {DB_NAME}.technic
-WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
-	data_timestamp_part='{CURRENT_TIMESTAMP}';

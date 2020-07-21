@@ -1,6 +1,0 @@
-SELECT
-	ECLColID as basicColorCode,
-	ECLColName as basicColorName
-FROM {DB_NAME}.eurocol
-WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
-	data_timestamp_part='{CURRENT_TIMESTAMP}';

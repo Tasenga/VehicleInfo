@@ -6,7 +6,7 @@ import sys
 
 from pyspark.sql import SparkSession
 
-from vis.ddl_processing import DDL
+from vis.sql_processing import SQL
 from vis.dataframeworker import DataFrameWorker
 from vis.databaseworker import DatabaseWorker
 from vis.configuration import Configuration, Mode
@@ -42,11 +42,11 @@ def get_parser() -> argparse.ArgumentParser:
 
 def run_main(spark: SparkSession, configuration: Configuration) -> Tuple[DataFrameWorker, DatabaseWorker]:
 
-    create_table_ddl = DDL(
-        configuration=configuration, template_file_name=f'{configuration.mode.value}_create_table_template_ddl.txt'
+    create_table_sql = SQL(
+        configuration=configuration, template_file_name=f'{configuration.mode.value}_create_table_template.txt'
     )
-    create_table_ddl.update_ddl()
-    create_table_ddl.run_ddl(spark)
+    create_table_sql.update_sql()
+    create_table_sql.run_sql(spark)
 
     if configuration.mode == Mode.short:
         tmp_table = DataFrameWorker.create_short_tmp_table(spark, configuration)

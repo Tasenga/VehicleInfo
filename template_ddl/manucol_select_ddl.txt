@@ -1,8 +1,0 @@
-SELECT
-	MCLManColCode as TCLMCLColCd,
-	MCLECLColCd as basicColorCode,
-	MCLColName as manufacturerColorName,
-	MCLPaintTrimFlag as manufacturerColorType
-FROM {DB_NAME}.manucol
-WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
-	data_timestamp_part='{CURRENT_TIMESTAMP}';

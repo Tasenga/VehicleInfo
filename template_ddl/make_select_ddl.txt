@@ -1,7 +1,0 @@
-SELECT
-	MAKVehType as VehType,
-	MAKNatCode as schwackeCode,
-	MAKName as name
-FROM {DB_NAME}.make
-WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
-	data_timestamp_part='{CURRENT_TIMESTAMP}';

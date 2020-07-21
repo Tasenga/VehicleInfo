@@ -14,10 +14,10 @@ _LOGGER.setLevel(logging.DEBUG)
 
 
 @dataclass
-class DDL:
+class SQL:
     '''
-    The object of the DDL class contains customer parameters to create, update and read customizing DDL operations
-    to extract data from the data source to hive-tables.
+    The object of the SQL class contains customer parameters to create, update
+    and read customizing SQL (ddl, dml) operations to extract data from the data source to hive-tables.
     '''
 
     configuration: Configuration
@@ -28,21 +28,21 @@ class DDL:
         return Path(Path.cwd(), self.configuration.source_folder)
 
     @property
-    def ddl_directory(self) -> Path:
-        return Path(Path.cwd(), "template_ddl")
+    def sql_directory(self) -> Path:
+        return Path(Path.cwd(), "template_sql")
 
     @property
-    def file_ddl(self) -> Path:
-        return Path(f'{self.ddl_directory}', f'{self.configuration.current_timestamp}_{self.template_file_name}')
+    def file_sql(self) -> Path:
+        return Path(f'{self.sql_directory}', f'{self.configuration.current_timestamp}_{self.template_file_name}')
 
-    def update_ddl(self, cwd: Path = Path.cwd()) -> None:
+    def update_sql(self, cwd: Path = Path.cwd()) -> None:
         '''
-        The function writes a text file with a list of ddl operations
+        The function writes a text file with a list of sql operations
         according to the template with the current timestamp and the current project directory
         according to the configuration.
         '''
 
-        with Path(f'{self.ddl_directory}', self.template_file_name).open('r') as example:
+        with Path(f'{self.sql_directory}', self.template_file_name).open('r') as example:
             template = example.read()
 
         change_list = {
@@ -56,26 +56,26 @@ class DDL:
         for old, new in change_list.items():
             template = template.replace(old, new)
 
-        with self.file_ddl.open('w') as ddl_file:
-            ddl_file.write(template)
+        with self.file_sql.open('w') as sql_file:
+            sql_file.write(template)
 
-        _LOGGER.debug('''text file with a list of ddl operations according to the template was created successful''')
+        _LOGGER.debug('''text file with a list of sql operations according to the template was created successful''')
 
-    def run_ddl(self, spark: SparkSession) -> Optional[dataframe.DataFrame]:
+    def run_sql(self, spark: SparkSession) -> Optional[dataframe.DataFrame]:
         '''
-        the function runs ddl operations from the text file with a list of ddl operations
+        the function runs sql operations from the text file with a list of sql operations
         according to the template with the current time stamp
         and the current project directory according to the configuration.
         Then function will remove this txt file
         '''
         try:
-            with self.file_ddl.open('r') as ddl:
-                _LOGGER.debug('''text file with a list of ddl operations is available''')
-                for operation in ddl.read().split('\n\n'):
+            with self.file_sql.open('r') as sql:
+                _LOGGER.debug('''text file with a list of sql operations is available''')
+                for operation in sql.read().split('\n\n'):
                     if operation.startswith("SELECT"):
                         return spark.sql(f'''{operation}''')
                     else:
                         spark.sql(f'''{operation}''')
         finally:
-            remove(f'{self.file_ddl}')
+            remove(f'{self.file_sql}')
         return None

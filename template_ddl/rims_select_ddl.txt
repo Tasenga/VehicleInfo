@@ -1,9 +1,0 @@
-SELECT
-	RIMVehType as VehType,
-	RIMID as JWHRIMRimFCd,
-	RIMID as JWHRIMRimRCd,
-	RIMWidth as rimWidth,
-	RIMDiameter as diameter
-FROM {DB_NAME}.rims
-WHERE data_date_part='{CURRENT_DATE_%Y-%m-%d}' AND
-	data_timestamp_part='{CURRENT_TIMESTAMP}';

@@ -179,7 +179,7 @@ class Type:
     TYPCylinder: Column = Column('TYPCylinder', 'cylinders')
     TYPTXTPollNormCd2: Column = Column('TYPTXTPollNormCd2', 'emissionStandard')
     TYPTotWgt: Column = Column('TYPTotWgt', 'weight')
-    TYPLength: Column = Column('TYPLength', 'lenght')
+    TYPLength: Column = Column('TYPLength', 'length')
     TYPWidth: Column = Column('TYPWidth', 'width')
 
 

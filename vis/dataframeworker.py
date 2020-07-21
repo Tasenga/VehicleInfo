@@ -13,7 +13,7 @@ from pyspark.sql.types import IntegerType
 
 import vis.descriptor as dsc
 from vis.configuration import Configuration
-from vis.ddl_processing import DDL
+from vis.sql_processing import SQL
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -52,6 +52,7 @@ def map_wheel_block(jwheel: DF, tyres: DF, rims: DF) -> DF:
          |    |    |    |-- aspectRatio: string (nullable = true)
          |    |    |    |-- construction: string (nullable = true)
     '''
+
     tyres_key = [dsc.TYRES.TYRVehType.fin_name, dsc.TYRES.JWHTYRTyreFCd.fin_name, dsc.TYRES.JWHTYRTyreRCd.fin_name]
     rims_key = [dsc.RIMS.RIMVehType.fin_name, dsc.RIMS.JWHRIMRimFCd.fin_name, dsc.RIMS.JWHRIMRimRCd.fin_name]
 
@@ -67,8 +68,6 @@ def map_wheel_block(jwheel: DF, tyres: DF, rims: DF) -> DF:
             struct(struct(rims_col).alias('front'), struct(rims_col).alias('rear'),).alias('wheels'),
         )
     )
-    wheels.printSchema()
-    wheels.show()
     return wheels
 
 
@@ -78,24 +77,24 @@ def map_model_block(model: DF, make: DF) -> DF:
         |-- VehType: short (nullable = true)
         |-- TYPModCd: integer (nullable = true)
         |-- model: struct (nullable = false)
-        |    |-- schwackeCode: integer (nullable = true)
+        |    |-- schwackeCode: integer (nullable = true) -> renamed from MODEL.MODNatCode after joining
         |    |-- name: string (nullable = true)
         |    |-- name2: string (nullable = true)
         |    |-- serialCode: string (nullable = true)
         |    |-- yearBegin: integer (nullable = true)
         |    |-- yearEnd: integer (nullable = true)
-        |    |-- productionBegin: date (nullable = true)
-        |    |-- productionEnd: date (nullable = true)
-        |    |-- vehicleClass: string (nullable = true)
+        |    |-- productionBegin: date (nullable = true) -> cast to_date(MODEL.MODImpBegin, 'yyyyMM')
+        |    |-- productionEnd: date (nullable = true) -> cast to_date(MODEL.MODImpEnd, 'yyyyMM')
+        |    |-- vehicleClass: string (nullable = true) -> new column from MODEL.MODVehType by dict
+                                                            {10: "Personenwagen", 20: "Transporter", etc.}
         |    |-- make: struct (nullable = false)
         |    |    |-- schwackeCode: integer (nullable = true)
         |    |    |-- name: string (nullable = true)
-
     '''
 
     model = (
-        model.withColumn(dsc.MODEL.MODImpBegin.fin_name, to_date(dsc.MODEL.MODImpBegin.fin_name, 'yyyyMMdd'))
-        .withColumn(dsc.MODEL.MODImpEnd.fin_name, to_date(dsc.MODEL.MODImpEnd.fin_name, 'yyyyMMdd'))
+        model.withColumn(dsc.MODEL.MODImpBegin.fin_name, to_date(dsc.MODEL.MODImpBegin.fin_name, 'yyyyMM'))
+        .withColumn(dsc.MODEL.MODImpEnd.fin_name, to_date(dsc.MODEL.MODImpEnd.fin_name, 'yyyyMM'))
         .withColumn(dsc.MODEL.MODBegin.fin_name, model[dsc.MODEL.MODBegin.fin_name].cast(IntegerType()))
         .withColumn(dsc.MODEL.MODEnd.fin_name, model[dsc.MODEL.MODEnd.fin_name].cast(IntegerType()))
         .withColumn(
@@ -127,9 +126,6 @@ def map_model_block(model: DF, make: DF) -> DF:
             struct(model[dsc.MAKE.MAKNatCode.fin_name], make[dsc.MAKE.MAKName.fin_name]).alias('make'),
         ).alias('model'),
     ).drop('schwackeCode')
-
-    model.show()
-    model.printSchema()
     return model
 
 
@@ -137,11 +133,12 @@ def map_esaco_block(esajoin: DF, esaco: DF, txttable: DF) -> DF:
     '''
     Function returns dataframe (will add as 'esacos' during map_feature_block) with schema:
          |-- code: integer (nullable = true)
-         |-- esaco: array (nullable = true)
+         |-- esacos: array (nullable = true)
          |    |-- element: struct (containsNull = false)
-         |    |    |-- name: string (nullable = true)
-         |    |    |-- mainGroup: string (nullable = true)
-         |    |    |-- subGroup: string (nullable = true)
+         |    |    |-- name: string (nullable = true) -> new column by renamed from ESACO.ESGTXTCodeCd2,
+                                                         replaced with data from txttable with type_replace()
+         |    |    |-- mainGroup: string (nullable = true) -> replaced with data from txttable with type_replace()
+         |    |    |-- subGroup: string (nullable = true) -> replaced with data from txttable with type_replace()
     '''
 
     esaco_col = [
@@ -165,8 +162,6 @@ def map_esaco_block(esajoin: DF, esaco: DF, txttable: DF) -> DF:
         .groupBy(dsc.ESAJOIN.ESJEQTEQCodeCd.fin_name)
         .agg(collect_set('esacos').alias('esacos'))
     )
-    esacos.show()
-    esacos.printSchema()
     return esacos
 
 
@@ -174,7 +169,7 @@ def map_color_block(typecol: DF, manucol: DF, eurocol: DF) -> DF:
     '''
     Function returns dataframe (will add as 'colors' during map_feature_block) with schema:
          |-- id: integer (nullable = true)
-         |-- color: array (nullable = true)
+         |-- colors: array (nullable = true)
          |    |-- element: struct (containsNull = false)
          |    |    |-- orderCode: string (nullable = true)
          |    |    |-- basicColorName: string (nullable = true)
@@ -199,39 +194,39 @@ def map_color_block(typecol: DF, manucol: DF, eurocol: DF) -> DF:
         .groupBy(dsc.TYPECOL.TCLTypEqtCode.fin_name)
         .agg(collect_set('colors').alias('colors'))
     )
-
-    colors.show()
-    colors.printSchema()
     return colors
 
 
 def map_feature_block(addition: DF, color_block: DF, manufactor: DF, esaco_block: DF,) -> DF:
     '''
-    Function returns dataframe (will add as 'feature' during fin_aggregation) with schema:
-         |-- VehType: short (nullable = true) -> will drop after fin_aggregation
-         |-- NatCode: string (nullable = true) -> will drop after fin_aggregation
-         |-- id: integer (nullable = true)
-         |-- code: integer (nullable = true)
-         |-- priceNet: decimal(10,2) (nullable = true)
-         |-- priceGross: decimal(10,2) (nullable = true)
-         |-- beginDate: date (nullable = true)
-         |-- endDate: date (nullable = true)
-         |-- isOptional: boolean (nullable = false)
-         |-- manufacturerCode: string (nullable = true)
-         |-- flagPack: short (nullable = true)
-         |-- targetGroup: short (nullable = true)
-         |-- taxRate: decimal(4,2) (nullable = true)
-         |-- currency: string (nullable = true)
-         |-- color: struct (nullable = false)
-         |    |-- orderCode: string (nullable = true)
-         |    |-- basicColorName: string (nullable = true)
-         |    |-- basicColorCode: short (nullable = true)
-         |    |-- manufacturerColorName: string (nullable = true)
-         |    |-- manufacturerColorType: short (nullable = true)
-         |-- esaco: struct (nullable = false)
-         |    |-- name: integer (nullable = true) -> will replace data from txttable after fin_aggregation
-         |    |-- mainGroup: string (nullable = true) -> will replace data from txttable after fin_aggregation
-         |    |-- subGroup: string (nullable = true) -> will replace data from txttable after fin_aggregation
+    Function returns dataframe (will add as 'features' during fin_aggregation) with schema:
+         |-- VehType: short (nullable = true)
+         |-- NatCode: string (nullable = true)
+         |-- features: struct (nullable = false)
+         |    |-- id: integer (nullable = true)
+         |    |-- code: integer (nullable = true)
+         |    |-- priceNet: decimal(10,2) (nullable = true)
+         |    |-- priceGross: decimal(10,2) (nullable = true)
+         |    |-- beginDate: date (nullable = true) -> cast to_date(ADDITION.ADDVal, 'yyyyMMdd')
+         |    |-- endDate: date (nullable = true) -> cast to_date(ADDITION.ADDValUntil, 'yyyyMMdd')
+         |    |-- isOptional: boolean (nullable = false) -> replaced data to boolean {'0': False, '1 or more': true}
+         |    |-- manufacturerCode: string (nullable = true)
+         |    |-- flagPack: short (nullable = true)
+         |    |-- targetGroup: short (nullable = true)
+         |    |-- taxRate: decimal(4,2) (nullable = true)
+         |    |-- currency: string (nullable = true)
+         |    |-- colors: array (nullable = true)
+         |    |    |-- element: struct (containsNull = false)
+         |    |    |    |-- orderCode: string (nullable = true)
+         |    |    |    |-- basicColorName: string (nullable = true)
+         |    |    |    |-- basicColorCode: short (nullable = true)
+         |    |    |    |-- manufacturerColorName: string (nullable = true)
+         |    |    |    |-- manufacturerColorType: short (nullable = true)
+         |    |-- esacos: array (nullable = true)
+         |    |    |-- element: struct (containsNull = false)
+         |    |    |    |-- name: string (nullable = true)
+         |    |    |    |-- mainGroup: string (nullable = true)
+         |    |    |    |-- subGroup: string (nullable = true)
     '''
 
     addition = addition.withColumn(
@@ -246,8 +241,8 @@ def map_feature_block(addition: DF, color_block: DF, manufactor: DF, esaco_block
             dsc.ADDITION.ADDVehType.fin_name,
             dsc.ADDITION.ADDNatCode.fin_name,
             struct(
-                dsc.MANUFACTOR.MANEQTEQCodeCd.fin_name,
                 dsc.TYPECOL.TCLTypEqtCode.fin_name,
+                dsc.MANUFACTOR.MANEQTEQCodeCd.fin_name,
                 dsc.ADDITION.ADDPrice2.fin_name,
                 dsc.ADDITION.ADDPrice1.fin_name,
                 dsc.ADDITION.ADDVal.fin_name,
@@ -265,24 +260,23 @@ def map_feature_block(addition: DF, color_block: DF, manufactor: DF, esaco_block
             ).alias('features'),
         )
     )
-    features.printSchema()
     return features
 
 
 def map_engine_block(type: DF, consumer: DF, typ_envkv: DF, technic: DF, txttable: DF) -> DF:
     '''
     Function returns dataframe (will add as 'engine' during fin_aggregation) with schema:
-        |-- VehType: short (nullable = true)
+         |-- VehType: short (nullable = true)
          |-- NatCode: string (nullable = true)
          |-- engine: struct (nullable = false)
-         |    |-- engineType: string (nullable = true)
-         |    |-- fuelType: string (nullable = true)
+         |    |-- engineType: string (nullable = true) -> replaced with data from txttable with type_replace()
+         |    |-- fuelType: string (nullable = true) -> replaced with data from txttable with type_replace()
          |    |-- cylinders: short (nullable = true)
          |    |-- displacement: decimal(7,2) (nullable = true)
          |    |-- co2Emission: short (nullable = true)
          |    |-- co2Emission2: short (nullable = true)
-         |    |-- emissionStandard: string (nullable = true)
-         |    |-- energyEfficiencyClass: string (nullable = true)
+         |    |-- emissionStandard: string (nullable = true) -> replaced with data from txttable with type_replace()
+         |    |-- energyEfficiencyClass: string (nullable = true)->replaced with data from txttable with type_replace()
          |    |-- power: struct (nullable = false)
          |    |    |-- ps: decimal(6,2) (nullable = true)
          |    |    |-- kw: decimal(6,2) (nullable = true)
@@ -296,10 +290,9 @@ def map_engine_block(type: DF, consumer: DF, typ_envkv: DF, technic: DF, txttabl
          |    |    |-- gasUrban: decimal(3,1) (nullable = true)
          |    |    |-- gasExtraUrban: decimal(3,1) (nullable = true)
          |    |    |-- gasCombined: decimal(3,1) (nullable = true)
-         |    |    |-- gasUnit: string (nullable = true)
+         |    |    |-- gasUnit: string (nullable = true) -> replaced with data from txttable with type_replace()
          |    |    |-- power: decimal(4,1) (nullable = true)
          |    |    |-- batteryCapacity: short (nullable = true)
-
     '''
 
     for column in [dsc.TYPE.TYPTXTFuelTypeCd2.fin_name, dsc.TYPE.TYPTXTPollNormCd2.fin_name]:
@@ -346,9 +339,6 @@ def map_engine_block(type: DF, consumer: DF, typ_envkv: DF, technic: DF, txttabl
             ).alias('engine'),
         )
     )
-
-    engine.show()
-    engine.printSchema()
     return engine
 
 
@@ -364,7 +354,7 @@ def fin_aggregation(
 ) -> DF:
     '''
     Function returns resulting dataframe with schema:
-         |-- schwackeCode: string (nullable = true)
+         |-- schwackeCode: string (nullable = true) -> renamed from TYPE.TYPNatCode after joining
          |-- model: struct (nullable = true)
          |    |-- schwackeCode: integer (nullable = true)
          |    |-- name: string (nullable = true)
@@ -380,19 +370,19 @@ def fin_aggregation(
          |    |    |-- name: string (nullable = true)
          |-- name: string (nullable = true)
          |-- name2: string (nullable = true)
-         |-- bodyType: string (nullable = true)
-         |-- driveType: string (nullable = true)
-         |-- transmissionType: string (nullable = true)
-         |-- productionBegin: date (nullable = true)
-         |-- productionEnd: date (nullable = true)
+         |-- bodyType: string (nullable = true) -> replaced with data from txttable with type_replace()
+         |-- driveType: string (nullable = true) -> replaced with data from txttable with type_replace()
+         |-- transmissionType: string (nullable = true) -> replaced with data from txttable with type_replace()
+         |-- productionBegin: date (nullable = true) -> cast to_date(TYPE.TYPImpBegin, 'yyyyMM')
+         |-- productionEnd: date (nullable = true) -> cast to_date(TYPE.TYPImpEnd, 'yyyyMM')
          |-- prices: array (nullable = true)
          |    |-- element: struct (containsNull = false)
          |    |    |-- currency: string (nullable = true)
          |    |    |-- net: decimal(13,2) (nullable = true)
          |    |    |-- gross: decimal(13,2) (nullable = true)
          |    |    |-- taxRate: decimal(4,2) (nullable = true)
-         |    |    |-- beginDate: date (nullable = true)
-         |    |    |-- endDate: date (nullable = true)
+         |    |    |-- beginDate: date (nullable = true) -> cast to_date(PRICEHISTORY.PRHVal, 'yyyyMMdd')
+         |    |    |-- endDate: date (nullable = true) -> cast to_date(PRICEHISTORY.PRHVal, 'yyyyMMdd')
          |-- wheels: struct (nullable = true)
          |    |-- front: struct (nullable = false)
          |    |    |-- rimWidth: string (nullable = true)
@@ -412,7 +402,7 @@ def fin_aggregation(
          |-- seats: short (nullable = true)
          |-- weight: integer (nullable = true)
          |-- dimensions: struct (nullable = false)
-         |    |-- lenght: integer (nullable = true)
+         |    |-- length: integer (nullable = true)
          |    |-- width: short (nullable = true)
          |-- engine: struct (nullable = true)
          |    |-- engineType: string (nullable = true)
@@ -519,9 +509,9 @@ def fin_aggregation(
     multiple_blocks = {'features': feature_block, "prices": prices, 'certifications': tcert}
 
     key = [dsc.TYPE.TYPVehType.fin_name, dsc.TYPE.TYPNatCode.fin_name]
+    model_block_key = [dsc.TYPE.TYPVehType.fin_name, dsc.TYPE.TYPModCd.fin_name]
     m = 'left'
 
-    model_block_key = [dsc.TYPE.TYPVehType.fin_name, dsc.TYPE.TYPModCd.fin_name]
     final_table = variants.join(model_block, model_block_key, m)
 
     for name, df in unit_blocks.items():
@@ -555,9 +545,6 @@ def fin_aggregation(
         'certifications',
         'features',
     )
-
-    final_table.show()
-    final_table.printSchema()
     return final_table
 
 
@@ -581,9 +568,9 @@ class DataFrameWorker:
 
         df_list = {}
         for table in tables:
-            ddl = DDL(configuration, f'{table}_select_sql.txt')
-            ddl.update_ddl()
-            df_list[table] = ddl.run_ddl(spark)
+            sql = SQL(configuration, f'{table}_select.txt')
+            sql.update_sql()
+            df_list[table] = sql.run_sql(spark)
 
         tmp_table = df_list["short_tmp_table"]
 
@@ -683,7 +670,7 @@ class DataFrameWorker:
 
     def write_to_file(self) -> None:
         '''The function creates folder with one json
-        file with all source table rows via one partition'''
+        file with all rows from source table via one partition'''
         self.result_table_folder.mkdir(parents=True, exist_ok=True)
         self.table.coalesce(1).write.json(
             str(
