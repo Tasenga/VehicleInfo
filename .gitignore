@@ -130,7 +130,6 @@ dmypy.json
 
 #data
 *.csv
-*.gkp
 data_source/
 documentations/
 metastore_db/
