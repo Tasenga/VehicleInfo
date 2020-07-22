@@ -1,7 +1,7 @@
 from __future__ import annotations
 import logging
 from pathlib import Path
-from typing import Type, List
+from typing import Type, List, Any, Callable, Dict, Union
 from dataclasses import dataclass
 from json import loads
 import re
@@ -548,6 +548,26 @@ def fin_aggregation(
     return final_table
 
 
+def check_resulting_file(func: Callable[..., Any]) -> Callable[..., Any]:
+    def wrapper(self: DataFrameWorker, *args: Union[Any]) -> Any:
+        '''
+        The function checks directory where resulting data json files were stored
+        and chooses only json files to further processing
+        '''
+        for path in Path(
+            Path.cwd(),
+            'result',
+            f'{self.configuration.db_name}_{self.configuration.mode.value}_'
+            f'{self.configuration.current_date}_{self.configuration.current_timestamp}',
+        ).iterdir():
+            if re.match(r'.*(.json)$', str(path)) and path.stat().st_size != 0:
+                with Path(path).open('r') as file_result:
+                    result = func(self, file_result, *args)
+        return result
+
+    return wrapper
+
+
 @dataclass
 class DataFrameWorker:
     '''class to create dataframe from source data,
@@ -555,14 +575,13 @@ class DataFrameWorker:
 
     table: DF
     configuration: Configuration
-    result_table_folder: Path = Path(Path.cwd(), 'result')
 
     @classmethod
     def create_short_tmp_table(cls: Type, spark: SparkSession, configuration: Configuration) -> DataFrameWorker:
         '''
         The function gets required information from several hive-tables,
-         aggregates it according to short mode and saves like pyspark dataframe object.
-         '''
+        aggregates it according to short mode and saves like pyspark dataframe object.
+        '''
 
         tables = ["short_tmp_table", "txttable"]
 
@@ -671,26 +690,24 @@ class DataFrameWorker:
     def write_to_file(self) -> None:
         '''The function creates folder with one json
         file with all rows from source table via one partition'''
-        self.result_table_folder.mkdir(parents=True, exist_ok=True)
-        self.table.coalesce(1).write.json(
+        result_table_folder = Path(Path.cwd(), 'result')
+        result_table_folder.mkdir(parents=True, exist_ok=True)
+        self.table.write.json(
             str(
                 Path(
-                    self.result_table_folder,
+                    result_table_folder,
                     f'{self.configuration.db_name}_{self.configuration.mode.value}_'
                     f'{self.configuration.current_date}_{self.configuration.current_timestamp}',
                 )
             )
         )
 
-    def read_from_file(self) -> List:
-        '''The function reads json files with results per entry
-        and returns list of dictionaries'''
-        for path in Path(
-            self.result_table_folder,
-            f'{self.configuration.db_name}_{self.configuration.mode.value}_'
-            f'{self.configuration.current_date}_{self.configuration.current_timestamp}',
-        ).iterdir():
-            if re.match(r'.*(.json)$', str(path)):
-                with Path(path).open('r') as file_result:
-                    result = [loads(row) for row in file_result]
+    @check_resulting_file
+    def read_from_file(self, file_result: List[Union[str, bytes, bytearray]], result: List[Dict]) -> List[Dict]:
+        '''
+        The function reads json files with results per entry
+        and returns list of dictionaries
+        '''
+        for row in file_result:
+            result.append(loads(row))
         return result

@@ -1,35 +1,31 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Union
 from json import loads
 
 from pymongo import MongoClient
 
-from .dataframeworker import DataFrameWorker
+from .dataframeworker import check_resulting_file
+from vis.configuration import Configuration
 
 
 @dataclass
 class DatabaseWorker:
     client: MongoClient
     collection: MongoClient
-    table: DataFrameWorker
+    configuration: Configuration
 
     @classmethod
-    def connect(
-        cls, host: str, port: int, table: DataFrameWorker
-    ) -> DatabaseWorker:
+    def connect(cls, host: str, port: int, configuration: Configuration) -> DatabaseWorker:
         client = MongoClient(host, port)
-        db = client[table.configuration.db_name]
+        db = client[configuration.db_name]
         collection = db['variants']
-        return cls(client=client, collection=collection, table=table)
+        return cls(client=client, collection=collection, configuration=configuration)
 
-    def write_to_mongodb(self) -> None:
-        '''The function write with one json
-        file with all source table rows via one partition'''
-        with self.client:
-            self.collection.insert_many(
-                [loads(row) for row in self.table.table.toJSON().collect()]
-            )
+    @check_resulting_file
+    def write_to_mongodb(self, file_result: List[Union[str, bytes, bytearray]]) -> None:
+        '''The function write data from json file into mongodb'''
+        self.collection.insert_many([loads(row) for row in file_result])
 
     def read_from_mongodb(self) -> List[Dict]:
         '''The function reads mongodb collection with

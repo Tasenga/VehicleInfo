@@ -9,7 +9,7 @@ from pyspark.sql import SparkSession
 import pytest
 
 from main import run_main
-from vis.configuration import Configuration
+from vis.configuration import Configuration, Mode
 
 
 configuration_short = Configuration(
@@ -43,7 +43,7 @@ def setup() -> None:
 def teardown() -> None:
     rmtree(
         Path(
-            tmp_table.result_table_folder,
+            Path(Path.cwd(), 'result'),
             f'{tmp_table.configuration.db_name}_{tmp_table.configuration.mode.value}_'
             f'{tmp_table.configuration.current_date}_{tmp_table.configuration.current_timestamp}',
         ),
@@ -57,11 +57,15 @@ def teardown() -> None:
 def test_run_main(spark_session: SparkSession, configuration: Configuration) -> None:
     global tmp_table, mongo_collection
     tmp_table, mongo_collection = run_main(spark_session, configuration)
-    result_from_file = tmp_table.read_from_file()
+
+    result_from_file = []
+    result_from_file = tmp_table.read_from_file(result_from_file)
+
     result_from_db = mongo_collection.read_from_mongodb()
     for dictionary in result_from_db:
         dictionary.pop('_id')
-    if configuration.mode.value == "short":
+
+    if configuration.mode == Mode.short:
         control_file_path = Path(Path.cwd(), configuration.source_folder, 'control_short_output.json')
     else:
         control_file_path = Path(Path.cwd(), configuration.source_folder, 'control_full_output.json')

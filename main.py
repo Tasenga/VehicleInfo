@@ -56,8 +56,9 @@ def run_main(spark: SparkSession, configuration: Configuration) -> Tuple[DataFra
     tmp_table.write_to_file()
     _LOGGER.debug('''json file with resulting data was created''')
 
-    mongo_collection = DatabaseWorker.connect(configuration.host, configuration.port, tmp_table)
+    mongo_collection = DatabaseWorker.connect(configuration.host, configuration.port, configuration)
     mongo_collection.write_to_mongodb()
+
     _LOGGER.debug('''data was added to mongodb''')
     return tmp_table, mongo_collection
 
