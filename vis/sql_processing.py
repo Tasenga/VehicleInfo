@@ -68,14 +68,15 @@ class SQL:
         and the current project directory according to the configuration.
         Then function will remove this txt file
         '''
+        result = None
         try:
             with self.file_sql.open('r') as sql:
                 _LOGGER.debug('''text file with a list of sql operations is available''')
                 for operation in sql.read().split('\n\n'):
                     if operation.startswith("SELECT"):
-                        return spark.sql(f'''{operation}''')
+                        result = spark.sql(f'''{operation}''')
                     else:
                         spark.sql(f'''{operation}''')
         finally:
             remove(f'{self.file_sql}')
-        return None
+        return result

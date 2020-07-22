@@ -12,7 +12,7 @@ from main import run_main
 from vis.configuration import Configuration, Mode
 
 
-configuration_short = Configuration(
+CONFIG_SHORT = Configuration(
     mode='short',
     source_folder='test_data_source',
     db_name='schwacke_test',
@@ -22,7 +22,7 @@ configuration_short = Configuration(
     current_timestamp=str(int(datetime.now().timestamp())),
 )
 
-configuration_full = Configuration(
+CONFIG_FULL = Configuration(
     mode='full',
     source_folder='test_data_source',
     db_name='schwacke_test',
@@ -40,7 +40,7 @@ def setup() -> None:
             copy(str(path), str(Path(mode_folder)))
 
 
-@pytest.mark.parametrize("configuration", [configuration_short, configuration_full])
+@pytest.mark.parametrize("configuration", [CONFIG_SHORT, CONFIG_FULL])
 @pytest.mark.critital_tests
 def test_run_main(spark_session: SparkSession, configuration: Configuration) -> None:
 

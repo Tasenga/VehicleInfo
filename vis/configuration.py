@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Type
+from typing import Type, Dict
 import logging
 from configparser import ConfigParser
 from enum import Enum
@@ -33,3 +33,28 @@ class Configuration(BaseModel):
         config = ConfigParser()
         config.read(file_path)
         return cls(**config['PARAMETERS'])
+
+
+class ConfigurationForProcessing(BaseModel):
+
+    TENINFOTYPE: int = 1
+    JWHisStd: int = 1
+    vehicleClass: Dict[int, str] = {10: "Personenwagen", 20: "Transporter", 30: "Zweirad", 40: "Gelandewagen"}
+    isOptional: int = 0
+    beginDate: str = 'yyyyMMdd'
+    endDate: str = 'yyyyMMdd'
+    yearBegin: str = 'yyyy'
+    yearEnd: str = 'yyyy'
+    productionBegin: str = 'yyyyMM'
+    productionEND: str = 'yyyyMM'
+
+    @classmethod
+    def from_file(cls: Type, file_path: Path) -> ConfigurationForProcessing:
+        config = ConfigParser()
+        config.read(file_path)
+        return cls(
+            TENINFOTYPE=config['PARAMETERS']['TENINFOTYPE'],
+            JWHisStd=config['PARAMETERS']['JWHisStd'],
+            isOptional=config['PARAMETERS']['isOptional'],
+            vehicleClass=config['vehicleClass'],
+        )

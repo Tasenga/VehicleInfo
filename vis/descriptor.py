@@ -1,11 +1,35 @@
 from __future__ import annotations
+from typing import Optional, Any
 from dataclasses import dataclass
+from enum import Enum
+
+
+@dataclass
+class ChangeType(Enum):
+    date = 'date'
+    integer = 'integer'
+    boolean = 'boolean'
+    new_column = 'new_column'
+
+
+@dataclass
+class Table:
+    '''
+    add_filter should be string with name of column from hive table
+    (in the configuration for processing should be the same name)
+    example 'JWHisStd'
+    '''
+
+    name: str
+    table: Any[dataclass()]
+    add_filter: Optional[str] = None
 
 
 @dataclass
 class Column:
     old_name: str
     fin_name: str
+    replace_type: Optional[ChangeType] = None
 
 
 @dataclass
@@ -14,11 +38,11 @@ class Addition:
     ADDNatCode: Column = Column('ADDNatCode', 'NatCode')
     ADDID: Column = Column('ADDID', 'id')
     ADDEQCode: Column = Column('ADDEQCode', 'code')
-    ADDVal: Column = Column('ADDVal', 'beginDate')  # TO_DATE(ADDVal, 'yyyyMMdd')
-    ADDValUntil: Column = Column('ADDValUntil', 'endDate')  # TO_DATE(ADDValUntil, 'yyyyMMdd')
+    ADDVal: Column = Column('ADDVal', 'beginDate', ChangeType.date)  # TO_DATE(ADDVal, 'yyyyMMdd')
+    ADDValUntil: Column = Column('ADDValUntil', 'endDate', ChangeType.date)  # TO_DATE(ADDValUntil, 'yyyyMMdd')
     ADDPrice1: Column = Column('ADDPrice1', 'priceGross')
     ADDPrice2: Column = Column('ADDPrice2', 'priceNet')
-    ADDFlag: Column = Column('ADDFlag', 'isOptional')
+    ADDFlag: Column = Column('ADDFlag', 'isOptional', ChangeType.boolean)
     ADDFlagPack: Column = Column('ADDFlagPack', 'flagPack')
     ADDTargetGrp: Column = Column('ADDTargetGrp', 'targetGroup')
     ADDTaxRt: Column = Column('ADDTaxRt', 'taxRate')
@@ -97,16 +121,16 @@ class Manufactor:
 
 @dataclass
 class Model:
-    MODVehType: Column = Column('MODVehType', 'VehType')
+    MODVehType: Column = Column('MODVehType', 'VehType', ChangeType.new_column)
     MODNatCode: Column = Column('MODNatCode', 'TYPModCd')
     MODMakCD: Column = Column('MODMakCD', 'schwackeCode')
     MODName: Column = Column('MODName', 'model_name')
     MODName2: Column = Column('MODName2', 'name2')
     MODModelSerCode: Column = Column('MODModelSerCode', 'serialCode')
-    MODBegin: Column = Column('MODBegin', 'yearBegin')  # CAST(MODBegin, as INT)
-    MODEnd: Column = Column('MODEnd', 'yearEnd')  # CAST(MODEnd, as INT)
-    MODImpBegin: Column = Column('MODImpBegin', 'productionBegin')  # TO_DATE(MODImpBegin, 'yyyyMMdd')
-    MODImpEnd: Column = Column('MODImpEnd', 'productionEnd')  # TO_DATE(MODImpEnd, 'yyyyMMdd')
+    MODBegin: Column = Column('MODBegin', 'yearBegin', ChangeType.integer)  # CAST(MODBegin, as INT)
+    MODEnd: Column = Column('MODEnd', 'yearEnd', ChangeType.integer)  # CAST(MODEnd, as INT)
+    MODImpBegin: Column = Column('MODImpBegin', 'productionBegin', ChangeType.date)  # TO_DATE(MODImpBegin, 'yyyyMM')
+    MODImpEnd: Column = Column('MODImpEnd', 'productionEnd', ChangeType.date)  # TO_DATE(MODImpEnd, 'yyyyMM')
 
 
 @dataclass
@@ -117,8 +141,8 @@ class Pricehistory:
     PRHNP1: Column = Column('PRHNP1', 'gross')
     PRHNP2: Column = Column('PRHNP2', 'net')
     PRHTaxRt: Column = Column('PRHTaxRt', 'taxRate')
-    PRHVal: Column = Column('PRHVal', 'beginDate')  # TO_DATE(PRHVal, 'yyyyMMdd')
-    PRHValUntil: Column = Column('PRHValUntil', 'endDate')  # TO_DATE(PRHValUntil, 'yyyyMMdd')
+    PRHVal: Column = Column('PRHVal', 'beginDate', ChangeType.date)  # TO_DATE(PRHVal, 'yyyyMMdd')
+    PRHValUntil: Column = Column('PRHValUntil', 'endDate', ChangeType.date)  # TO_DATE(PRHValUntil, 'yyyyMMdd')
 
 
 @dataclass
@@ -171,8 +195,8 @@ class Type:
     TYPTXTBodyCo1Cd2: Column = Column('TYPTXTBodyCo1Cd2', 'bodyType')
     TYPDoor: Column = Column('TYPDoor', 'doors')
     TYPSeat: Column = Column('TYPSeat', 'seats')
-    TYPImpBegin: Column = Column('TYPImpBegin', 'productionBegin')  # TO_DATE(TYPImpBegin, 'yyyyMM')
-    TYPImpEnd: Column = Column('TYPImpEnd', 'productionEnd')  # TO_DATE(TYPImpEnd, 'yyyyMM')
+    TYPImpBegin: Column = Column('TYPImpBegin', 'productionBegin', ChangeType.date)  # TO_DATE(TYPImpBegin, 'yyyyMM')
+    TYPImpEnd: Column = Column('TYPImpEnd', 'productionEnd', ChangeType.date)  # TO_DATE(TYPImpEnd, 'yyyyMM')
     TYPKW: Column = Column('TYPKW', 'kw')
     TYPHP: Column = Column('TYPHP', 'ps')
     TYPCapTech: Column = Column('TYPCapTech', 'displacement')
@@ -200,331 +224,44 @@ class Tyres:
     TYRDesign: Column = Column('TYRDesign', 'construction')
 
 
-ADDITION = Addition()
-CONSUMER = Consumer()
-ESACO = Esaco()
-ESAJOIN = Esajoin()
-EUROCOL = Eurocol()
-JWHEEL = Jwheel()
-MAKE = Make()
-MANUCOL = Manucol()
-MANUFACTOR = Manufactor()
-MODEL = Model()
-PRICEHISTORY = Pricehistory()
-RIMS = Rims()
-TCERT = Tcert()
-TECHNIC = Technic()
-TXTTABLE = Txttable()
-TYP_ENVKV = Typ_envkv()
-TYPE = Type()
-TYPECOL = Typecol()
-TYRES = Tyres()
+ADDITION = Table('addition', Addition())
+CONSUMER = Table('consumer', Consumer())
+ESACO = Table('esaco', Esaco())
+ESAJOIN = Table('esajoin', Esajoin())
+EUROCOL = Table('eurocol', Eurocol())
+JWHEEL = Table('jwheel', Jwheel(), 'JWHisStd')
+MAKE = Table('make', Make())
+MANUCOL = Table('manucol', Manucol())
+MANUFACTOR = Table('manufactor', Manufactor())
+MODEL = Table('model', Model())
+PRICEHISTORY = Table('pricehistory', Pricehistory())
+RIMS = Table('rims', Rims())
+TCERT = Table('tcert', Tcert())
+TECHNIC = Table('technic', Technic())
+TXTTABLE = Table('txttable', Txttable())
+TYP_ENVKV = Table('typ_envkv', Typ_envkv(), 'TENINFOTYPE')
+TYPE = Table('type', Type())
+TYPECOL = Table('typecol', Typecol())
+TYRES = Table('tyres', Tyres())
 
-
-# ADDVehType = Column('ADDVehType', 'VehType')
-# ADDNatCode = Column('ADDNatCode', 'NatCode')
-# ADDID = Column('ADDID', 'id')
-# ADDEQCode = Column('ADDEQCode', 'code')
-# ADDVal = Column('ADDVal', 'beginDate') #TO_DATE(ADDVal, 'yyyyMMdd')
-# ADDValUntil = Column('ADDValUntil', 'endDate') #TO_DATE(ADDValUntil, 'yyyyMMdd')
-# ADDPrice1 = Column('ADDPrice1', 'priceGross')
-# ADDPrice2 = Column('ADDPrice2', 'priceNet')
-# ADDFlag = Column('ADDFlag', 'isOptional')
-# ADDFlagPack = Column('ADDFlagPack', 'flagPack')
-# ADDTargetGrp = Column('ADDTargetGrp', 'targetGroup')
-# ADDTaxRt = Column('ADDTaxRt', 'taxRate')
-# ADDCurrency = Column('ADDCurrency', 'currency')
-#
-# ADDITION = [
-#     ADDVehType,
-#     ADDNatCode,
-#     ADDID,
-#     ADDEQCode,
-#     ADDVal,
-#     ADDValUntil,
-#     ADDPrice1,
-#     ADDPrice2,
-#     ADDFlag,
-#     ADDFlagPack,
-#     ADDTargetGrp,
-#     ADDTaxRt,
-#     ADDCurrency
-# ]
-#
-# TCOVehType = Column('TCOVehType', 'VehType')
-# TCONatCode = Column('TCONatCode', 'NatCode')
-# TCOCo2Emi = Column('TCOCo2Emi', 'co2Emission')
-# TCOCo2EmiV2 = Column('TCOCo2EmiV2', 'co2Emission2')
-# TCOConsUrb = Column('TCOConsUrb', 'urban')
-# TCOConsLand = Column('TCOConsLand', 'extraUrban')
-# TCOConsTot = Column('TCOConsTot', 'combined')
-# TCOConsUrbV2 = Column('TCOConsUrbV2', 'urban2')
-# TCOConsLandV2 = Column('TCOConsLandV2', 'extraUrban2')
-# TCOConsTotV2 = Column('TCOConsTotV2', 'combined2')
-# TCOConsGasUrb = Column('TCOConsGasUrb', 'gasUrban')
-# TCOConsGasLand = Column('TCOConsGasLand', 'gasExtraUrban')
-# TCOConsGasTot = Column('TCOConsGasTot', 'gasCombined')
-# TCOTXTConsGasUnitCd = Column('TCOTXTConsGasUnitCd', 'gasUnit')
-# TCOConsPow = Column('TCOConsPow', 'power')
-# TCOBatCap = Column('TCOBatCap', 'batteryCapacity')
-#
-# CONSUMER = [
-#     TCOVehType,
-#     TCONatCode,
-#     TCOCo2Emi,
-#     TCOCo2EmiV2,
-#     TCOConsUrb,
-#     TCOConsLand,
-#     TCOConsTot,
-#     TCOConsUrbV2,
-#     TCOConsLandV2,
-#     TCOConsTotV2,
-#     TCOConsGasUrb,
-#     TCOConsGasLand,
-#     TCOConsGasTot,
-#     TCOTXTConsGasUnitCd,
-#     TCOConsPow,
-#     TCOBatCap
-# ]
-#
-# ESGTXTCodeCd2 = Column('ESGTXTCodeCd2', 'name')
-# ESGTXTMainGrpCd2 = Column('ESGTXTMainGrpCd2', 'mainGroup')
-# ESGTXTSubGrpCd2 = Column('ESGTXTSubGrpCd2', 'subGroup')
-#
-# ESACO = [
-#     ESGTXTCodeCd2,
-#     ESGTXTMainGrpCd2,
-#     ESGTXTSubGrpCd2
-# ]
-#
-# ESJEQTEQCodeCd = Column('ESJEQTEQCodeCd', 'code')
-# ESJTXTESACOCd2 = Column('ESJTXTESACOCd2', 'name')
-#
-# ESAJOIN = [
-#     ESJEQTEQCodeCd,
-#     ESJTXTESACOCd2
-# ]
-#
-# ECLColID = Column('ECLColID', 'basicColorCode')
-# ECLColName = Column('ECLColName', 'basicColorName')
-#
-# EUROCOL = [
-#     ECLColID,
-#     ECLColName
-# ]
-#
-# JWHVehType = Column('JWHVehType', 'VehType')
-# JWHNatCode = Column('JWHNatCode', 'NatCode')
-# JWHTYRTyreFCd = Column('JWHTYRTyreFCd', 'JWHTYRTyreFCd')
-# JWHTYRTyreRCd = Column('JWHTYRTyreRCd', 'JWHTYRTyreRCd')
-# JWHRIMRimFCd = Column('JWHRIMRimFCd', 'JWHRIMRimFCd')
-# JWHRIMRimRCd = Column('JWHRIMRimRCd', 'JWHRIMRimRCd')
-#
-# JWHEEL = [
-#     JWHVehType,
-#     JWHNatCode,
-#     JWHTYRTyreFCd,
-#     JWHTYRTyreRCd,
-#     JWHRIMRimFCd,
-#     JWHRIMRimRCd
-# ]
-#
-# MAKVehType = Column('MAKVehType', 'VehType')
-# MAKNatCode = Column('MAKNatCode', 'schwackeCode')
-# MAKName = Column('MAKName', 'name')
-#
-# MAKE = [
-#     MAKVehType,
-#     MAKNatCode,
-#     MAKName
-# ]
-#
-# MCLManColCode = Column('MCLManColCode', 'TCLMCLColCd')
-# MCLECLColCd = Column('MCLECLColCd', 'basicColorCode')
-# MCLColName = Column('MCLColName', 'manufacturerColorName')
-# MCLPaintTrimFlag = Column('MCLPaintTrimFlag', 'manufacturerColorType')
-#
-# MANUCOL = [
-#     MCLManColCode,
-#     MCLECLColCd,
-#     MCLColName,
-#     MCLPaintTrimFlag
-# ]
-#
-# MANEQTEQCodeCd = Column('MANEQTEQCodeCd', 'code')
-# MANMCode = Column('MANMCode', 'manufacturerCode')
-#
-# MANUFACTOR = [
-#     MANEQTEQCodeCd,
-#     MANMCode
-# ]
-#
-# MODVehType = Column('MODVehType', 'VehType')
-# MODNatCode = Column('MODNatCode', 'TYPModCd')
-# MODMakCD = Column('MODMakCD', 'schwackeCode')
-# MODName = Column('MODName', 'name')
-# MODName2 = Column('MODName2', 'name2')
-# MODModelSerCode = Column('MODModelSerCode', 'serialCode')
-# MODBegin = Column('MODBegin', 'yearBegin') #CAST(MODBegin, as INT)
-# MODEnd = Column('MODEnd',  'yearEnd')  #CAST(MODEnd, as INT)
-# MODImpBegin = Column('MODImpBegin', 'productionBegin')  #TO_DATE(MODImpBegin, 'yyyyMMdd')
-# MODImpEnd = Column('MODImpEnd', 'productionEnd')  #TO_DATE(MODImpEnd, 'yyyyMMdd')
-#
-# MODEL = [
-#     MODVehType,
-#     MODNatCode,
-#     MODMakCD,
-#     MODName,
-#     MODName2,
-#     MODModelSerCode,
-#     MODBegin,
-#     MODEnd,
-#     MODImpBegin,
-#     MODImpEnd
-# ]
-#
-# PRHVehType = Column('PRHVehType', 'VehType')
-# PRHNatCode = Column('PRHNatCode', 'NatCode')
-# PRHCurrency = Column('PRHCurrency', 'currency')
-# PRHNP1 = Column('PRHNP1', 'gross')
-# PRHNP2 = Column('PRHNP2', 'net')
-# PRHTaxRt = Column('PRHTaxRt', 'taxRate')
-# PRHVal = Column('PRHVal', 'beginDate') #TO_DATE(PRHVal, 'yyyyMMdd')
-# PRHValUntil = Column('PRHValUntil', 'endDate') #TO_DATE(PRHValUntil, 'yyyyMMdd')
-#
-# PRICEHISTORY = [
-#     PRHVehType,
-#     PRHNatCode,
-#     PRHCurrency,
-#     PRHNP1,
-#     PRHNP2,
-#     PRHTaxRt,
-#     PRHVal,
-#     PRHValUntil
-# ]
-#
-# RIMVehType = Column('RIMVehType', 'VehType')
-# JWHRIMRimFCd = Column('RIMID', 'JWHRIMRimFCd')
-# JWHRIMRimRCd = Column('RIMID', 'JWHRIMRimRCd')
-# RIMWidth = Column('RIMWidth', 'rimWidth')
-# RIMDiameter = Column('RIMDiameter', 'diameter')
-#
-# RIMS = [
-#     RIMVehType,
-#     JWHRIMRimFCd,
-#     JWHRIMRimRCd,
-#     RIMWidth,
-#     RIMDiameter
-# ]
-#
-# TCEVehType = Column('TCEVehType', 'VehType')
-# TCENatCode = Column('TCENatCode', 'NatCode')
-# TCENum = Column('TCENum', 'hsn')
-# TCENum2 = Column('TCENum2', 'tsn')
-#
-# TCERT = [
-#     TCEVehType,
-#     TCENatCode,
-#     TCENum,
-#     TCENum2
-# ]
-#
-# TECVehType = Column('TECVehType', 'VehType')
-# TECNatCode = Column('TECNatCode', 'NatCode')
-# TECTXTEngTypeCd2 = Column('TECTXTEngTypeCd2', 'engineType')
-#
-# TECHNIC = [
-#     TECVehType,
-#     TECNatCode,
-#     TECTXTEngTypeCd2
-# ]
-#
-# TXTCode = Column('TXTCode', 'TXTCode')
-# TXTTextLong = Column('TXTTextLong', 'TXTTextLong')
-#
-# TXTTABLE = [
-#     TXTCode,
-#     TXTTextLong
-# ]
-#
-# TENVehType = Column('TENVehType', 'VehType')
-# TENNatCode = Column('TENNatCode', 'NatCode')
-# TENCo2EffClassCd2 = Column('TENCo2EffClassCd2', 'energyEfficiencyClass')
-#
-# TYP_ENVKV = [
-#     TENVehType,
-#     TENNatCode,
-#     TENCo2EffClassCd2
-# ]
-#
-# TYPVehType = Column('TYPVehType', 'VehType')
-# TYPNatCode = Column('TYPNatCode', 'NatCode')
-# TYPModCd = Column('TYPModCd', 'TYPModCd')
-# TYPName = Column('TYPName', 'name')
-# TYPName2 = Column('TYPName2', 'name2')
-# TYPTXTFuelTypeCd2 = Column('TYPTXTFuelTypeCd2', 'fuelType')
-# TYPTXTDriveTypeCd2 = Column('TYPTXTDriveTypeCd2', 'driveType')
-# TYPTXTTransTypeCd2 = Column('TYPTXTTransTypeCd2', 'transmissionType')
-# TYPTXTBodyCo1Cd2 = Column('TYPTXTBodyCo1Cd2', 'bodyType')
-# TYPDoor = Column('TYPDoor', 'doors')
-# TYPSeat = Column('TYPSeat', 'seats')
-# TYPImpBegin = Column('TYPImpBegin', 'productionBegin') #TO_DATE(TYPImpBegin, 'yyyyMM')
-# TYPImpEnd = Column('TYPImpEnd', 'productionEnd') #TO_DATE(TYPImpEnd, 'yyyyMM')
-# TYPKW = Column('TYPKW', 'kw')
-# TYPHP = Column('TYPHP', 'ps')
-# TYPCapTech = Column('TYPCapTech', 'displacement')
-# TYPCylinder = Column('TYPCylinder', 'cylinders')
-# TYPTXTPollNormCd2 = Column('TYPTXTPollNormCd2', 'emissionStandard')
-# TYPTotWgt = Column('TYPTotWgt', 'weight')
-# TYPLength = Column('TYPLength', 'lenght')
-# TYPWidth = Column('TYPWidth', 'width')
-#
-# TYPE = [
-#     TYPVehType,
-#     TYPNatCode,
-#     TYPModCd,
-#     TYPName,
-#     TYPName2,
-#     TYPTXTFuelTypeCd2,
-#     TYPTXTDriveTypeCd2,
-#     TYPTXTTransTypeCd2,
-#     TYPTXTBodyCo1Cd2,
-#     TYPDoor,
-#     TYPSeat,
-#     TYPImpBegin,
-#     TYPImpEnd,
-#     TYPKW,
-#     TYPHP,
-#     TYPCapTech,
-#     TYPCylinder,
-#     TYPTXTPollNormCd2,
-#     TYPTotWgt,
-#     TYPLength,
-#     TYPWidth
-# ]
-#
-# TCLTypEqtCode = Column('TCLTypEqtCode', 'id')
-# TCLMCLColCd = Column('TCLMCLColCd', 'TCLMCLColCd')
-# TCLOrdCd = Column('TCLOrdCd', 'orderCode')
-#
-# TYPECOL = [
-#     TCLTypEqtCode,
-#     TCLMCLColCd,
-#     TCLOrdCd
-# ]
-#
-# TYRVehType = Column('TYRVehType', 'VehType')
-# JWHTYRTyreFCd = Column('TYRID', 'JWHTYRTyreFCd')
-# JWHTYRTyreRCd = Column('TYRID', 'JWHTYRTyreRCd')
-# TYRWidth = Column('TYRWidth', 'width')
-# TYRCrossSec = Column('TYRCrossSec', 'aspectRatio')
-# TYRDesign = Column('TYRDesign', 'construction')
-#
-# TYRES = [
-#     TYRVehType,
-#     JWHTYRTyreFCd,
-#     JWHTYRTyreRCd,
-#     TYRWidth,
-#     TYRCrossSec,
-#     TYRDesign
-# ]
+TABLES = [
+    ADDITION,
+    CONSUMER,
+    ESACO,
+    ESAJOIN,
+    EUROCOL,
+    JWHEEL,
+    MAKE,
+    MANUCOL,
+    MANUFACTOR,
+    MODEL,
+    PRICEHISTORY,
+    RIMS,
+    TCERT,
+    TECHNIC,
+    TXTTABLE,
+    TYP_ENVKV,
+    TYPE,
+    TYPECOL,
+    TYRES,
+]
