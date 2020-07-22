@@ -40,38 +40,37 @@ def setup() -> None:
             copy(str(path), str(Path(mode_folder)))
 
 
-def teardown() -> None:
-    rmtree(
-        Path(
-            Path(Path.cwd(), 'result'),
-            f'{tmp_table.configuration.db_name}_{tmp_table.configuration.mode.value}_'
-            f'{tmp_table.configuration.current_date}_{tmp_table.configuration.current_timestamp}',
-        ),
-        ignore_errors=True,
-    )
-    mongo_collection.drop_collection_mongodb()
-
-
 @pytest.mark.parametrize("configuration", [configuration_short, configuration_full])
 @pytest.mark.critital_tests
 def test_run_main(spark_session: SparkSession, configuration: Configuration) -> None:
-    global tmp_table, mongo_collection
+
     tmp_table, mongo_collection = run_main(spark_session, configuration)
+    try:
+        result_from_file = []
+        result_from_file = tmp_table.read_from_file(result_from_file)
 
-    result_from_file = []
-    result_from_file = tmp_table.read_from_file(result_from_file)
+        result_from_db = mongo_collection.read_from_mongodb()
+        for dictionary in result_from_db:
+            dictionary.pop('_id')
 
-    result_from_db = mongo_collection.read_from_mongodb()
-    for dictionary in result_from_db:
-        dictionary.pop('_id')
+        if configuration.mode == Mode.short:
+            control_file_path = Path(Path.cwd(), configuration.source_folder, 'control_short_output.json')
+        else:
+            control_file_path = Path(Path.cwd(), configuration.source_folder, 'control_full_output.json')
 
-    if configuration.mode == Mode.short:
-        control_file_path = Path(Path.cwd(), configuration.source_folder, 'control_short_output.json')
-    else:
-        control_file_path = Path(Path.cwd(), configuration.source_folder, 'control_full_output.json')
+        with control_file_path.open('r') as file_result:
+            control_result = [loads(row) for row in file_result]
 
-    with control_file_path.open('r') as file_result:
-        control_result = [loads(row) for row in file_result]
+        assert result_from_db == control_result
+        assert result_from_file == control_result
 
-    assert result_from_db == control_result
-    assert result_from_file == control_result
+    finally:
+        rmtree(
+            Path(
+                Path(Path.cwd(), 'result'),
+                f'{tmp_table.configuration.db_name}_{tmp_table.configuration.mode.value}_'
+                f'{tmp_table.configuration.current_date}_{tmp_table.configuration.current_timestamp}',
+            ),
+            ignore_errors=True,
+        )
+        mongo_collection.drop_collection_mongodb()
