@@ -248,7 +248,7 @@ TYRES = Table('tyres', Tyres())
 
 
 TABLES = [
-    TXTTABLE,  # first record
+    TXTTABLE,  # should be first record for right processing
     ADDITION,
     CONSUMER,
     ESACO,
