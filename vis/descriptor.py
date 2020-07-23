@@ -5,11 +5,12 @@ from enum import Enum
 
 
 @dataclass
-class ChangeType(Enum):
+class ChangeColumn(Enum):
     date = 'date'
     integer = 'integer'
     boolean = 'boolean'
     new_column = 'new_column'
+    from_txttable = 'from_txttable'
 
 
 @dataclass
@@ -29,7 +30,7 @@ class Table:
 class Column:
     old_name: str
     fin_name: str
-    replace_type: Optional[ChangeType] = None
+    rewrite: Optional[ChangeColumn] = None
 
 
 @dataclass
@@ -38,11 +39,11 @@ class Addition:
     ADDNatCode: Column = Column('ADDNatCode', 'NatCode')
     ADDID: Column = Column('ADDID', 'id')
     ADDEQCode: Column = Column('ADDEQCode', 'code')
-    ADDVal: Column = Column('ADDVal', 'beginDate', ChangeType.date)  # TO_DATE(ADDVal, 'yyyyMMdd')
-    ADDValUntil: Column = Column('ADDValUntil', 'endDate', ChangeType.date)  # TO_DATE(ADDValUntil, 'yyyyMMdd')
+    ADDVal: Column = Column('ADDVal', 'beginDate', ChangeColumn.date)  # TO_DATE(ADDVal, 'yyyyMMdd')
+    ADDValUntil: Column = Column('ADDValUntil', 'endDate', ChangeColumn.date)  # TO_DATE(ADDValUntil, 'yyyyMMdd')
     ADDPrice1: Column = Column('ADDPrice1', 'priceGross')
     ADDPrice2: Column = Column('ADDPrice2', 'priceNet')
-    ADDFlag: Column = Column('ADDFlag', 'isOptional', ChangeType.boolean)
+    ADDFlag: Column = Column('ADDFlag', 'isOptional', ChangeColumn.boolean)
     ADDFlagPack: Column = Column('ADDFlagPack', 'flagPack')
     ADDTargetGrp: Column = Column('ADDTargetGrp', 'targetGroup')
     ADDTaxRt: Column = Column('ADDTaxRt', 'taxRate')
@@ -64,7 +65,7 @@ class Consumer:
     TCOConsGasUrb: Column = Column('TCOConsGasUrb', 'gasUrban')
     TCOConsGasLand: Column = Column('TCOConsGasLand', 'gasExtraUrban')
     TCOConsGasTot: Column = Column('TCOConsGasTot', 'gasCombined')
-    TCOTXTConsGasUnitCd: Column = Column('TCOTXTConsGasUnitCd', 'gasUnit')
+    TCOTXTConsGasUnitCd: Column = Column('TCOTXTConsGasUnitCd', 'gasUnit', ChangeColumn.from_txttable)
     TCOConsPow: Column = Column('TCOConsPow', 'power')
     TCOBatCap: Column = Column('TCOBatCap', 'batteryCapacity')
 
@@ -72,8 +73,9 @@ class Consumer:
 @dataclass
 class Esaco:
     ESGTXTCodeCd2: Column = Column('ESGTXTCodeCd2', 'id')
-    ESGTXTMainGrpCd2: Column = Column('ESGTXTMainGrpCd2', 'mainGroup')
-    ESGTXTSubGrpCd2: Column = Column('ESGTXTSubGrpCd2', 'subGroup')
+    ESGTXTCodeCd2_: Column = Column('ESGTXTCodeCd2', 'name', ChangeColumn.from_txttable)
+    ESGTXTMainGrpCd2: Column = Column('ESGTXTMainGrpCd2', 'mainGroup', ChangeColumn.from_txttable)
+    ESGTXTSubGrpCd2: Column = Column('ESGTXTSubGrpCd2', 'subGroup', ChangeColumn.from_txttable)
 
 
 @dataclass
@@ -121,16 +123,16 @@ class Manufactor:
 
 @dataclass
 class Model:
-    MODVehType: Column = Column('MODVehType', 'VehType', ChangeType.new_column)
+    MODVehType: Column = Column('MODVehType', 'VehType', ChangeColumn.new_column)
     MODNatCode: Column = Column('MODNatCode', 'TYPModCd')
     MODMakCD: Column = Column('MODMakCD', 'schwackeCode')
     MODName: Column = Column('MODName', 'model_name')
     MODName2: Column = Column('MODName2', 'name2')
     MODModelSerCode: Column = Column('MODModelSerCode', 'serialCode')
-    MODBegin: Column = Column('MODBegin', 'yearBegin', ChangeType.integer)  # CAST(MODBegin, as INT)
-    MODEnd: Column = Column('MODEnd', 'yearEnd', ChangeType.integer)  # CAST(MODEnd, as INT)
-    MODImpBegin: Column = Column('MODImpBegin', 'productionBegin', ChangeType.date)  # TO_DATE(MODImpBegin, 'yyyyMM')
-    MODImpEnd: Column = Column('MODImpEnd', 'productionEnd', ChangeType.date)  # TO_DATE(MODImpEnd, 'yyyyMM')
+    MODBegin: Column = Column('MODBegin', 'yearBegin', ChangeColumn.integer)  # CAST(MODBegin, as INT)
+    MODEnd: Column = Column('MODEnd', 'yearEnd', ChangeColumn.integer)  # CAST(MODEnd, as INT)
+    MODImpBegin: Column = Column('MODImpBegin', 'productionBegin', ChangeColumn.date)  # TO_DATE(MODImpBegin, 'yyyyMM')
+    MODImpEnd: Column = Column('MODImpEnd', 'productionEnd', ChangeColumn.date)  # TO_DATE(MODImpEnd, 'yyyyMM')
 
 
 @dataclass
@@ -141,8 +143,8 @@ class Pricehistory:
     PRHNP1: Column = Column('PRHNP1', 'gross')
     PRHNP2: Column = Column('PRHNP2', 'net')
     PRHTaxRt: Column = Column('PRHTaxRt', 'taxRate')
-    PRHVal: Column = Column('PRHVal', 'beginDate', ChangeType.date)  # TO_DATE(PRHVal, 'yyyyMMdd')
-    PRHValUntil: Column = Column('PRHValUntil', 'endDate', ChangeType.date)  # TO_DATE(PRHValUntil, 'yyyyMMdd')
+    PRHVal: Column = Column('PRHVal', 'beginDate', ChangeColumn.date)  # TO_DATE(PRHVal, 'yyyyMMdd')
+    PRHValUntil: Column = Column('PRHValUntil', 'endDate', ChangeColumn.date)  # TO_DATE(PRHValUntil, 'yyyyMMdd')
 
 
 @dataclass
@@ -166,7 +168,7 @@ class Tcert:
 class Technic:
     TECVehType: Column = Column('TECVehType', 'VehType')
     TECNatCode: Column = Column('TECNatCode', 'NatCode')
-    TECTXTEngTypeCd2: Column = Column('TECTXTEngTypeCd2', 'engineType')
+    TECTXTEngTypeCd2: Column = Column('TECTXTEngTypeCd2', 'engineType', ChangeColumn.from_txttable)
 
 
 @dataclass
@@ -179,7 +181,7 @@ class Txttable:
 class Typ_envkv:
     TENVehType: Column = Column('TENVehType', 'VehType')
     TENNatCode: Column = Column('TENNatCode', 'NatCode')
-    TENCo2EffClassCd2: Column = Column('TENCo2EffClassCd2', 'energyEfficiencyClass')
+    TENCo2EffClassCd2: Column = Column('TENCo2EffClassCd2', 'energyEfficiencyClass', ChangeColumn.from_txttable)
 
 
 @dataclass
@@ -189,19 +191,19 @@ class Type:
     TYPModCd: Column = Column('TYPModCd', 'TYPModCd')
     TYPName: Column = Column('TYPName', 'name')
     TYPName2: Column = Column('TYPName2', 'name2')
-    TYPTXTFuelTypeCd2: Column = Column('TYPTXTFuelTypeCd2', 'fuelType')
-    TYPTXTDriveTypeCd2: Column = Column('TYPTXTDriveTypeCd2', 'driveType')
-    TYPTXTTransTypeCd2: Column = Column('TYPTXTTransTypeCd2', 'transmissionType')
-    TYPTXTBodyCo1Cd2: Column = Column('TYPTXTBodyCo1Cd2', 'bodyType')
+    TYPTXTFuelTypeCd2: Column = Column('TYPTXTFuelTypeCd2', 'fuelType', ChangeColumn.from_txttable)
+    TYPTXTDriveTypeCd2: Column = Column('TYPTXTDriveTypeCd2', 'driveType', ChangeColumn.from_txttable)
+    TYPTXTTransTypeCd2: Column = Column('TYPTXTTransTypeCd2', 'transmissionType', ChangeColumn.from_txttable)
+    TYPTXTBodyCo1Cd2: Column = Column('TYPTXTBodyCo1Cd2', 'bodyType', ChangeColumn.from_txttable)
     TYPDoor: Column = Column('TYPDoor', 'doors')
     TYPSeat: Column = Column('TYPSeat', 'seats')
-    TYPImpBegin: Column = Column('TYPImpBegin', 'productionBegin', ChangeType.date)  # TO_DATE(TYPImpBegin, 'yyyyMM')
-    TYPImpEnd: Column = Column('TYPImpEnd', 'productionEnd', ChangeType.date)  # TO_DATE(TYPImpEnd, 'yyyyMM')
+    TYPImpBegin: Column = Column('TYPImpBegin', 'productionBegin', ChangeColumn.date)  # TO_DATE(TYPImpBegin, 'yyyyMM')
+    TYPImpEnd: Column = Column('TYPImpEnd', 'productionEnd', ChangeColumn.date)  # TO_DATE(TYPImpEnd, 'yyyyMM')
     TYPKW: Column = Column('TYPKW', 'kw')
     TYPHP: Column = Column('TYPHP', 'ps')
     TYPCapTech: Column = Column('TYPCapTech', 'displacement')
     TYPCylinder: Column = Column('TYPCylinder', 'cylinders')
-    TYPTXTPollNormCd2: Column = Column('TYPTXTPollNormCd2', 'emissionStandard')
+    TYPTXTPollNormCd2: Column = Column('TYPTXTPollNormCd2', 'emissionStandard', ChangeColumn.from_txttable)
     TYPTotWgt: Column = Column('TYPTotWgt', 'weight')
     TYPLength: Column = Column('TYPLength', 'length')
     TYPWidth: Column = Column('TYPWidth', 'width')
@@ -244,7 +246,9 @@ TYPE = Table('type', Type())
 TYPECOL = Table('typecol', Typecol())
 TYRES = Table('tyres', Tyres())
 
+
 TABLES = [
+    TXTTABLE,  # first record
     ADDITION,
     CONSUMER,
     ESACO,
@@ -259,7 +263,6 @@ TABLES = [
     RIMS,
     TCERT,
     TECHNIC,
-    TXTTABLE,
     TYP_ENVKV,
     TYPE,
     TYPECOL,

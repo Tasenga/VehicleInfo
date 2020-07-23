@@ -138,6 +138,7 @@ result/
 
 #configuration
 *.ini
+!config_tables.ini
 
 #temporary script
 exp.py

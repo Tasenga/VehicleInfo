@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Type, Dict
+from typing import Type, Dict, Any
 import logging
 from configparser import ConfigParser
 from enum import Enum
@@ -37,24 +37,30 @@ class Configuration(BaseModel):
 
 class ConfigurationForProcessing(BaseModel):
 
-    TENINFOTYPE: int = 1
-    JWHisStd: int = 1
-    vehicleClass: Dict[int, str] = {10: "Personenwagen", 20: "Transporter", 30: "Zweirad", 40: "Gelandewagen"}
-    isOptional: int = 0
-    beginDate: str = 'yyyyMMdd'
-    endDate: str = 'yyyyMMdd'
-    yearBegin: str = 'yyyy'
-    yearEnd: str = 'yyyy'
-    productionBegin: str = 'yyyyMM'
-    productionEND: str = 'yyyyMM'
+    DEFAULT: Dict[str, Any]
+    addition: Dict[str, Any]
+    consumer: Dict[str, Any]
+    esaco: Dict[str, Any]
+    esajoin: Dict[str, Any]
+    eurocol: Dict[str, Any]
+    jwheel: Dict[str, Any]
+    make: Dict[str, Any]
+    manucol: Dict[str, Any]
+    manufactor: Dict[str, Any]
+    model: Dict[str, Any]
+    pricehistory: Dict[str, Any]
+    rims: Dict[str, Any]
+    tcert: Dict[str, Any]
+    technic: Dict[str, Any]
+    txttable: Dict[str, Any]
+    typ_envkv: Dict[str, Any]
+    type: Dict[str, Any]
+    typecol: Dict[str, Any]
+    tyres: Dict[str, Any]
 
     @classmethod
     def from_file(cls: Type, file_path: Path) -> ConfigurationForProcessing:
         config = ConfigParser()
+        config.optionxform = str  # type: ignore
         config.read(file_path)
-        return cls(
-            TENINFOTYPE=config['PARAMETERS']['TENINFOTYPE'],
-            JWHisStd=config['PARAMETERS']['JWHisStd'],
-            isOptional=config['PARAMETERS']['isOptional'],
-            vehicleClass=config['vehicleClass'],
-        )
+        return cls(**config)
