@@ -1,7 +1,7 @@
-CREATE DATABASE IF NOT EXISTS {DB_NAME}
-            LOCATION "{ROOT_DIRECTORY}/dbs/{DB_NAME}";
+CREATE DATABASE IF NOT EXISTS schwacke_test_full
+            LOCATION "D:/project/VehicleInfo/dbs/schwacke_test_full";
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.rims (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.rims (
             RIMMarket VARCHAR(2),
             RIMVehType SMALLINT,
             RIMID INT,
@@ -20,7 +20,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.consumer (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.consumer (
             TCOMarket VARCHAR(2),
             TCOVehType SMALLINT,
             TCONatCode VARCHAR(13),
@@ -104,7 +104,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.jwheel (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.jwheel (
             JWHMarket VARCHAR(2),
             JWHVehType SMALLINT,
             JWHNatCode VARCHAR(13),
@@ -129,7 +129,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.tyres (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.tyres (
             TYRMarket VARCHAR(2),
             TYRVehType SMALLINT,
             TYRID INT,
@@ -149,7 +149,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.make (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.make (
             MAKMarket VARCHAR(2),
             MAKVehType SMALLINT,
             MAKLangCode VARCHAR(4),
@@ -171,7 +171,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.model (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.model (
             MODMarket VARCHAR(2),
             MODVehType SMALLINT,
             MODLangCode VARCHAR(4),
@@ -198,7 +198,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.type (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.type (
             TYPMarket VARCHAR(2),
             TYPVehType SMALLINT,
             TYPNatCode VARCHAR(13),
@@ -287,7 +287,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.txttable (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.txttable (
             TXTMarket VARCHAR(2),
             TXTCode VARCHAR(8),
             TXTLangCode VARCHAR(4),
@@ -301,7 +301,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.typ_envkv (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.typ_envkv (
             TENMarket VARCHAR(2),
             TENVehType SMALLINT,
             TENNatCode VARCHAR(13),
@@ -333,7 +333,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.pricehistory (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.pricehistory (
             PRHMarket VARCHAR(2),
             PRHVehType SMALLINT,
             PRHNatCode VARCHAR(13),
@@ -367,7 +367,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.technic (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.technic (
             TECMarket VARCHAR(2),
             TECVehType SMALLINT,
             TECNatCode VARCHAR(13),
@@ -512,7 +512,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.tcert (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.tcert (
             TCEMarket VARCHAR(2),
             TCEVehType SMALLINT,
             TCENatCode VARCHAR(13),
@@ -531,7 +531,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.typecol (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.typecol (
             TCLMarket VARCHAR(2),
             TCLTypEqtCode INT,
             TCLMCLColCd INT,
@@ -544,7 +544,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.eurocol (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.eurocol (
             ECLMarket VARCHAR(2),
             ECLColID VARCHAR(8),
             ECLColName VARCHAR(60),
@@ -558,7 +558,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.manucol (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.manucol (
             MCLMarket VARCHAR(2),
             MCLManColCode INT,
             MCLECLColCd SMALLINT,
@@ -574,7 +574,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.addition (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.addition (
             ADDMarket VARCHAR(2),
             ADDVehType SMALLINT,
             ADDID INT,
@@ -604,26 +604,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.eqtext (
-            EQTMarket VARCHAR(2),
-            EQTVehType SMALLINT,
-            EQTEQCode INT,
-            EQTLangCode VARCHAR(4),
-            EQTText VARCHAR(600),
-            EQTShort VARCHAR(40),
-            EQTDevalCode SMALLINT,
-            EQTGroupCode SMALLINT,
-            EQTRecStatus SMALLINT,
-            EQTRecDate VARCHAR(8),
-            EQTSort INT,
-            EQTImpCode VARCHAR(1)
-)
-PARTITIONED BY(data_date_part STRING, data_timestamp_part STRING)
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\t'
-STORED AS TEXTFILE;
-
-CREATE TABLE IF NOT EXISTS {DB_NAME}.manufactor (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.manufactor (
             MANMarket VARCHAR(2),
             MANVehType SMALLINT,
             MANEQTEQCodeCd INT,
@@ -641,7 +622,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.esaco (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.esaco (
             ESGType SMALLINT,
             ESGTXTCodeCd2 VARCHAR(8),
             ESGSort SMALLINT,
@@ -655,7 +636,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.esajoin (
+CREATE TABLE IF NOT EXISTS schwacke_test_full.esajoin (
             ESJMarket VARCHAR(2),
             ESJVehType SMALLINT,
             ESJEQTEQCodeCd INT,
@@ -669,142 +650,135 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/RIMS.gkp"
-INTO TABLE {DB_NAME}.rims
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/RIMS.gkp"
+INTO TABLE schwacke_test_full.rims
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/CONSUMER.gkp"
-INTO TABLE {DB_NAME}.consumer
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/CONSUMER.gkp"
+INTO TABLE schwacke_test_full.consumer
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/JWHEEL.gkp"
-INTO TABLE {DB_NAME}.jwheel
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/JWHEEL.gkp"
+INTO TABLE schwacke_test_full.jwheel
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/TYRES.gkp"
-INTO TABLE {DB_NAME}.tyres
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/TYRES.gkp"
+INTO TABLE schwacke_test_full.tyres
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/MAKE.gkp"
-INTO TABLE {DB_NAME}.make
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/MAKE.gkp"
+INTO TABLE schwacke_test_full.make
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/MODEL.gkp"
-INTO TABLE {DB_NAME}.model
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/MODEL.gkp"
+INTO TABLE schwacke_test_full.model
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/TYPE.gkp"
-INTO TABLE {DB_NAME}.type
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/TYPE.gkp"
+INTO TABLE schwacke_test_full.type
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/TXTTABEL.gkp"
-INTO TABLE {DB_NAME}.txttable
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/TXTTABEL.gkp"
+INTO TABLE schwacke_test_full.txttable
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/TYP_ENVKV.gkp"
-INTO TABLE {DB_NAME}.typ_envkv
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/TYP_ENVKV.gkp"
+INTO TABLE schwacke_test_full.typ_envkv
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/PRICEHISTORY.gkp"
-INTO TABLE {DB_NAME}.pricehistory
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/PRICEHISTORY.gkp"
+INTO TABLE schwacke_test_full.pricehistory
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/TECHNIC.gkp"
-INTO TABLE {DB_NAME}.technic
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/TECHNIC.gkp"
+INTO TABLE schwacke_test_full.technic
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/TCERT.gkp"
-INTO TABLE {DB_NAME}.tcert
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/TCERT.gkp"
+INTO TABLE schwacke_test_full.tcert
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/TYPECOL.gkp"
-INTO TABLE {DB_NAME}.typecol
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/TYPECOL.gkp"
+INTO TABLE schwacke_test_full.typecol
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/EUROCOL.gkp"
-INTO TABLE {DB_NAME}.eurocol
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/EUROCOL.gkp"
+INTO TABLE schwacke_test_full.eurocol
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/MANUCOL.gkp"
-INTO TABLE {DB_NAME}.manucol
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/MANUCOL.gkp"
+INTO TABLE schwacke_test_full.manucol
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/ADDITION.gkp"
-INTO TABLE {DB_NAME}.addition
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/ADDITION.gkp"
+INTO TABLE schwacke_test_full.addition
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/EQTEXT.gkp"
-INTO TABLE {DB_NAME}.eqtext
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/MANUFACTOR.gkp"
+INTO TABLE schwacke_test_full.manufactor
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/MANUFACTOR.gkp"
-INTO TABLE {DB_NAME}.manufactor
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/ESACO.gkp"
+INTO TABLE schwacke_test_full.esaco
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );
 
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/ESACO.gkp"
-INTO TABLE {DB_NAME}.esaco
+LOAD DATA INPATH "D:/project/VehicleInfo/test_data_source/ESAJOIN.gkp"
+INTO TABLE schwacke_test_full.esajoin
     PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
-    );
-
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/ESAJOIN.gkp"
-INTO TABLE {DB_NAME}.esajoin
-    PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
+        data_date_part='2020-07-14',
+        data_timestamp_part='1594726338'
     );

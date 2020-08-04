@@ -8,7 +8,7 @@ from pyspark.sql import SparkSession
 import pytest
 
 from vis.configuration import Configuration
-from vis.ddl_processing import DDL
+from vis.sql_processing import SQL
 
 
 spark = SparkSession.builder.enableHiveSupport().getOrCreate()
@@ -19,7 +19,7 @@ def teardown_module(module: ModuleType) -> None:
     print('spark-session close')
 
 
-def test_update_ddl() -> None:
+def test_update_sql() -> None:
 
     configuration = Configuration(
         mode='full',
@@ -30,20 +30,18 @@ def test_update_ddl() -> None:
         current_date='2020-07-14',
         current_timestamp='1594726338',
     )
-    ddl = DDL(configuration)
+    sql = SQL(configuration, 'full_create_table_template.txt')
     try:
-        ddl.update_ddl(cwd=Path("D:\\project\\VehicleInfo"))
-        with Path(ddl.mode_directory, f'{ddl.configuration.mode.value}_schwacke_hive_tables_ddl.txt').open(
-            'r'
-        ) as ddl_file:
-            text_ddl = ddl_file.read()
+        sql.update_sql(cwd=Path("D:\\project\\VehicleInfo"))
+        with Path(f'{sql.sql_directory}', f'{sql.file_sql}').open('r') as sql_file:
+            text_sql = sql_file.read()
 
-        with Path(ddl.mode_directory, 'control_schwacke_hive_tables_ddl.txt').open('r') as control_ddl_file:
-            control_ddl = control_ddl_file.read()
+        with Path(f'{sql.sql_directory}', 'test_create_table.txt').open('r') as control_sql_file:
+            control_sql = control_sql_file.read()
     finally:
-        remove(Path(ddl.mode_directory, f'{ddl.configuration.mode.value}_schwacke_hive_tables_ddl.txt'))
+        remove(Path(f'{sql.file_sql}'))
 
-    assert text_ddl == control_ddl
+    assert text_sql == control_sql
 
 
 @pytest.fixture(
@@ -76,7 +74,7 @@ def param_test(request: pytest.fixture) -> List[Any]:
     return request.param
 
 
-class TestRunDDL:
+class TestRunSQL:
 
     configuration = Configuration(
         mode='short',
@@ -87,16 +85,16 @@ class TestRunDDL:
         current_date='test',
         current_timestamp='1',
     )
-    ddl = DDL(configuration)
+    sql = SQL(configuration, 'test.txt')
     cwd = str(Path.cwd()).replace('\\', '/')
 
     def setup(self) -> None:
-        with self.ddl.file_ddl.open('w') as ddl_file:
-            ddl_file.write(
-                f'''CREATE DATABASE IF NOT EXISTS {self.ddl.configuration.db_name}
-                    LOCATION "{self.cwd}/dbs/{self.ddl.configuration.db_name}";
+        with self.sql.file_sql.open('w') as sql_file:
+            sql_file.write(
+                f'''CREATE DATABASE IF NOT EXISTS {self.sql.configuration.db_name}
+                    LOCATION "{self.cwd}/dbs/{self.sql.configuration.db_name}";
 
-                    CREATE TABLE IF NOT EXISTS {self.ddl.configuration.db_name}.test_type (
+                    CREATE TABLE IF NOT EXISTS {self.sql.configuration.db_name}.test_type (
                         Varchar VARCHAR(2),
                         SmallInteger SMALLINT,
                         Integer INT,
@@ -107,24 +105,23 @@ class TestRunDDL:
                     FIELDS TERMINATED BY '\t'
                     STORED AS TEXTFILE;
 
-                    LOAD DATA INPATH "{self.cwd}/{self.ddl.configuration.source_folder}/test_type.gkp"
-                    INTO TABLE {self.ddl.configuration.db_name}.test_type
+                    LOAD DATA INPATH "{self.cwd}/{self.sql.configuration.source_folder}/test_type.gkp"
+                    INTO TABLE {self.sql.configuration.db_name}.test_type
                     PARTITION(
-                        data_date_part='{self.ddl.configuration.current_date}',
-                        data_timestamp_part='{self.ddl.configuration.current_timestamp}');'''
+                        data_date_part='{self.sql.configuration.current_date}',
+                        data_timestamp_part='{self.sql.configuration.current_timestamp}');'''
             )
 
     def teardown(self) -> None:
-        remove(Path(self.ddl.mode_directory, f'{self.ddl.configuration.mode.value}_schwacke_hive_tables_ddl.txt'))
-        spark.sql(f'''DROP DATABASE {self.ddl.configuration.db_name} CASCADE''')
+        spark.sql(f'''DROP DATABASE {self.sql.configuration.db_name} CASCADE''')
 
     def test_correct_data_type(self, param_test: List[Any]) -> None:
         (input, expected_output) = param_test
-        with Path(self.ddl.mode_directory, 'test_type.gkp').open('w') as gkp:
+        with Path(self.sql.mode_directory, 'test_type.gkp').open('w') as gkp:
             gkp.write(input)
-        self.ddl.run_ddl(spark)
+        self.sql.run_sql(spark)
         test_type_table = spark.sql(
-            f'''SELECT Varchar, SmallInteger, Integer, DEC FROM {self.ddl.configuration.db_name}.test_type;'''
+            f'''SELECT Varchar, SmallInteger, Integer, DEC FROM {self.sql.configuration.db_name}.test_type;'''
         ).collect()
         expected_type_table = expected_output
         assert test_type_table == expected_type_table

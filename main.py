@@ -6,10 +6,11 @@ import sys
 
 from pyspark.sql import SparkSession
 
-from vis.ddl_processing import DDL
+from vis.sql_processing import SQL
 from vis.dataframeworker import DataFrameWorker
 from vis.databaseworker import DatabaseWorker
-from vis.configuration import Configuration
+from vis.configuration import Configuration, Mode
+from vis.tablespreparator import Tables
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,24 +41,26 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def run_main(
-    spark: SparkSession, configuration: Configuration
-) -> Tuple[DataFrameWorker, DatabaseWorker]:
+def run_main(spark: SparkSession, configuration: Configuration) -> Tuple[DataFrameWorker, DatabaseWorker]:
 
-    ddl = DDL(configuration=configuration)
+    create_table_sql = SQL(
+        configuration=configuration, template_file_name=f'{configuration.mode.value}_create_table_template.txt'
+    )
+    create_table_sql.update_sql()
+    create_table_sql.run_sql(spark)
 
-    ddl.update_ddl()
-    ddl.run_ddl(spark)
-
-    tmp_table = DataFrameWorker.create_tmp_table(spark, configuration)
+    if configuration.mode == Mode.short:
+        tmp_table = DataFrameWorker.create_short_tmp_table(spark, configuration)
+    else:
+        df_list = Tables.obtain_tables(spark, configuration)
+        tmp_table = DataFrameWorker.create_full_tmp_table(df_list.tables, df_list.configuration)
 
     tmp_table.write_to_file()
     _LOGGER.debug('''json file with resulting data was created''')
 
-    mongo_collection = DatabaseWorker.connect(
-        configuration.host, configuration.port, tmp_table
-    )
+    mongo_collection = DatabaseWorker.connect(configuration.host, configuration.port, configuration)
     mongo_collection.write_to_mongodb()
+
     _LOGGER.debug('''data was added to mongodb''')
     return tmp_table, mongo_collection
 
@@ -68,15 +71,13 @@ if __name__ == '__main__':
     config_file = Path(Path.cwd(), namespace.input)
 
     configuration = Configuration.from_file(config_file)
-    _LOGGER.debug(f"current configuration {configuration}")
 
-    with SparkSession.builder.appName(
-        'VehicleInfo'
-    ).enableHiveSupport().getOrCreate() as spark:
+    with SparkSession.builder.appName('VehicleInfo').enableHiveSupport().getOrCreate() as spark:
         spark.sparkContext.setLogLevel('ERROR')
         logging.basicConfig(
             stream=sys.stdout,
             format='%(asctime)s - %(funcName)s - %(levelname)s - %(message)s',
             datefmt='%Y-%m-%d  %H:%M:%S',
         )
+        _LOGGER.debug(f"current configuration {configuration}")
         run_main(spark, configuration)

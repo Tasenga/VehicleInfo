@@ -604,25 +604,6 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE;
 
-CREATE TABLE IF NOT EXISTS {DB_NAME}.eqtext (
-            EQTMarket VARCHAR(2),
-            EQTVehType SMALLINT,
-            EQTEQCode INT,
-            EQTLangCode VARCHAR(4),
-            EQTText VARCHAR(600),
-            EQTShort VARCHAR(40),
-            EQTDevalCode SMALLINT,
-            EQTGroupCode SMALLINT,
-            EQTRecStatus SMALLINT,
-            EQTRecDate VARCHAR(8),
-            EQTSort INT,
-            EQTImpCode VARCHAR(1)
-)
-PARTITIONED BY(data_date_part STRING, data_timestamp_part STRING)
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\t'
-STORED AS TEXTFILE;
-
 CREATE TABLE IF NOT EXISTS {DB_NAME}.manufactor (
             MANMarket VARCHAR(2),
             MANVehType SMALLINT,
@@ -776,13 +757,6 @@ INTO TABLE {DB_NAME}.manucol
 
 LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/ADDITION.gkp"
 INTO TABLE {DB_NAME}.addition
-    PARTITION(
-        data_date_part='{CURRENT_DATE_%Y-%m-%d}',
-        data_timestamp_part='{CURRENT_TIMESTAMP}'
-    );
-
-LOAD DATA INPATH "{ROOT_DIRECTORY}/{SOURCE_FOLDER}/EQTEXT.gkp"
-INTO TABLE {DB_NAME}.eqtext
     PARTITION(
         data_date_part='{CURRENT_DATE_%Y-%m-%d}',
         data_timestamp_part='{CURRENT_TIMESTAMP}'

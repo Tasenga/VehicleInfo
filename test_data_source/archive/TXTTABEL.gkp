@@ -1,40 +1,28 @@
-DE	00700202	DEDE	Anti-Blockier-System	202	0
-DE	00700204	DEDE	Anhängerkupplung	204	0
-DE	00700206	DEDE	Bordcomputer	206	0
-DE	00700208	DEDE	Colorglas	208	0
-DE	00700210	DEDE	Drehzahlmesser	210	0
-DE	00700212	DEDE	Durchlade/Skisack	212	0
-DE	00700215	DEDE	Felgen-Sonderausführung	215	0
-DE	00700219	DEDE	Schaltgetriebe	219	0
-DE	00700226	DEDE	Halogen-Zusatz-Scheinwerfer	226	0
-DE	00700228	DEDE	Heckscheibenwischer	228	0
-DE	00700230	DEDE	Katalysator	230	0
-DE	00700233	DEDE	Klimaanlage	233	0
-DE	00700237	DEDE	Metallic-/Sonderlackierung	237	0
-DE	00700246	DEDE	Niveauregulierung (Kompressor)	246	0
-DE	00700248	DEDE	Polster - Leder	248	0
-DE	00700250	DEDE	Einparksysteme	250	0
-DE	00700252	DEDE	Radio	252	0
-DE	00700256	DEDE	Rückspiegel rechts	256	0
-DE	00700258	DEDE	Rückspiegel elektrisch verstellbar, beheizt	258	0
-DE	00700261	DEDE	Hubdach-Glas	261	0
-DE	00700263	DEDE	Schiebedach elektrisch	263	0
-DE	00700265	DEDE	Servolenkung	265	0
-DE	00700271	DEDE	Sperrdifferential	271	0
-DE	00700275	DEDE	Standheizung	275	0
-DE	00700283	DEDE	Tempomat	283	0
-DE	00700287	DEDE	Wegfahrsperre	287	0
-DE	00700291	DEDE	Zusatzinstrumente	291	0
-DE	00700500	DEDE	Marktgruppe: Sicherheitsausstattung	500	0
-DE	00701101	DEDE	Luftfederung	1101	0
-DE	00701103	DEDE	Sitzmemory	1103	0
-DE	00701105	DEDE	Freisprecheinrichtung	1105	0
-DE	00701107	DEDE	Toter Winkel Warnung	1107	0
-DE	00701109	DEDE	Bluetooth Schnittstelle	1109	0
-DE	00701111	DEDE	mp3	1111	0
-DE	00701113	DEDE	Start/Stop System	1113	0
-DE	00701115	DEDE	Regensensor	1115	0
-DE	00050001	DEDE	Vorderradantrieb	V	0
-DE	00010012	DEDE	Geschlossen	Ges	0
-DE	00180001	DEDE	Manuelles Getriebe	G	0
+DE	00719999	DEDE	keine Zuordnung	9999	0
 DE	00010009	DEDE	Limousine	Lim	0
+DE	00030005	DEDE	Kleinwagen	B	0
+DE	00030007	DEDE	Mittelklasse	D	0
+DE	00049999	DEDE	keine Zuordnung	9999	0
+DE	00789999	DEDE	keine Zuordnung	9999	0
+DE	00799999	DEDE	keine Zuordnung	9999	0
+DE	00100001	DEDE	Benzin	B	0
+DE	00239999	DEDE	keine Zuordnung	9999	0
+DE	00080001	DEDE	Reihe	R	0
+DE	00120001	DEDE	Turbo	T	0
+DE	00170022	DEDE	geregelter Kat mit Partikelfilter	F	0
+DE	00489999	DEDE	keine Zuordnung	9999	0
+DE	02019999	DEDE	keine Zuordnung	9999	0
+DE	00109999	DEDE	keine Zuordnung	9999	0
+DE	00050001	DEDE	Vorderradantrieb	V	0
+DE	00189999	DEDE	keine Zuordnung	9999	0
+DE	00180001	DEDE	Manuelles Getriebe	G	0
+DE	00330008	DEDE	EU5	EU5	0
+DE	00332065	DEDE	EU6d-Temp	E6T	0
+DE	00170007	DEDE	geregelter Kat	G	0
+DE	00010001	DEDE	Kombi	Kom	0
+DE	00909999	DEDE	keine Zuordnung	9999	0
+DE	00770013	DEDE	Komfort/ Innen & Aussen	0013	0
+DE	00760118	DEDE	Polster sonstiges	0118	0
+DE	00060001	DEDE	OTTOMOTOR	O	0
+DE	00753899	DEDE	Innenausstattung: sonstiges	3899	0
+DE	00754507	DEDE	Polster Stoff	4507	0
